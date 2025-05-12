@@ -1,4 +1,4 @@
-<header class="position-absolute top-0 start-0 w-100 z-3">
+<header class="{{ request()->is('/') || request()->is('about-us') || request()->is('payment') || request()->is('payment/success') ? 'position-absolute' : '' }} top-0 start-0 w-100 z-3">
     <nav class="navbar navbar-expand-lg navbar-dark py-3">
         <div class="container-fluid bg-transparennt">
             <!-- Left Navigation -->

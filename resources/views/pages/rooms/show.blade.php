@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="mt-6">
-                    <a href="{{ route('pay') }}" class="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <a href="{{ route('payment.index') }}" class="w-full btn btn-kubo btn-lg">
                         Book Now
                     </a>
                 </div>

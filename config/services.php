@@ -39,5 +39,9 @@ return [
         'key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    'airbnb' => [
+        'api_key' => env('AIRBNB_API_KEY'),
+        'api_secret' => env('AIRBNB_API_SECRET'),
+    ],
 
 ];

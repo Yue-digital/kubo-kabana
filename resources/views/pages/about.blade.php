@@ -35,7 +35,7 @@
         <div class="container">
             <div class="card shadow-lg border-0">
                 <div class="card-body p-4">
-                    <form action="{{ route('kubo-room') }}" method="GET" class="row g-3 align-items-center">
+                    <form action="#" method="GET" class="row g-3 align-items-center">
                         <div class="col-md-4">
                             <label for="check_in" class="form-label">Start Date</label>
                             <input type="date" class="form-control" id="check_in" name="check_in" required>
@@ -75,9 +75,9 @@
 
             <div class="col-md-6 feature-col">
                 <div class="content">
-                    <h2>FEATURES</h2>
+                    <h2>About Us</h2>
                     <p>The resort  features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi -Fi access for guests who want to surf the net.</p>
-
+    
                     <a href="#" class="btn btn-lg btn-kubo">SERVICES</a>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                         <img src="{{Storage::url('/slider-1.png')}}" alt="Image 4" />
                       </div>
                     </div>
-
+                
                     <!-- Navigation buttons -->
                     <div class="swiper-button-next"></div>
                     <div class="swiper-button-prev"></div>
@@ -126,5 +126,5 @@
         </div>
     </div>
 
-
+    
 @endsection

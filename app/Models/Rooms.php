@@ -3,18 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rooms extends Model
 {
     protected $fillable = [
         'name',
         'description',
-        'price',
+        'lean_weekday_price',
+        'lean_weekend_price',
+        'peak_weekday_price',
+        'peak_weekend_price',
         'image',
         'gallery',
         'amenities',
         'num_guest'
     ];
+
+    public function galleryImages(): HasMany
+    {
+        return $this->hasMany(GalleryImage::class, 'room_id')->orderBy('order');
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 
     //
     protected function handleRecordCreation(array $data): Model

@@ -18,6 +18,17 @@ class HomeController extends Controller
         return view('pages.home', compact('featuredRooms', 'mapUrl'));
     }
 
+    public function about()
+    {
+        $featuredRooms = Rooms::take(3)->get();
+        $lat = 15.27995630433838;
+        $lng = 120.00453604999998;
+    
+        $mapUrl = $this->generateGoogleStaticMap($lat, $lng);
+
+        return view('pages.about', compact('featuredRooms', 'mapUrl'));
+    }
+
     private function generateGoogleStaticMap($lat, $lng, $zoom = 18, $width = 1700, $height = 900)
     {
         $apiKey = config('services.google_maps.key'); // Alternatively use env('GOOGLE_MAPS_API_KEY')

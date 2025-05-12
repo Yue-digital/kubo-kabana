@@ -5,6 +5,15 @@
     --background-overlay: rgba(136, 100, 85, 0.9);
     --transition-duration: 0.5s;
     --hover-opacity: 0.8;
+    --font-family: 'Poppins', sans-serif;
+}
+
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Apply Poppins font to body */
+body {
+    font-family: var(--font-family);
 }
 
 /* Button styles */
@@ -16,6 +25,17 @@
     color: var(--primary-color);
     transition: all var(--transition-duration) ease;
     border-radius: 20px;
+}
+
+.btn-kubo-alternate{
+  background-color: var(--secondary-color);
+  text-transform: uppercase;
+  font-weight: bolder;
+  font-size: 18px;
+}
+
+body .navbar-brand{
+  margin-top: -30px;
 }
 
 img{
@@ -68,7 +88,7 @@ img.full-logo{
         height: 100%;
         background-color: var(--background-overlay);
         z-index: -1;
-       
+
     }
 
     .contact-col{
@@ -99,7 +119,7 @@ img.full-logo{
         flex-wrap: wrap;
         align-items: center;
         justify-self: center;
-        
+
         .content{
             background: var(--primary-color);
             border-radius: 20px;
@@ -262,7 +282,7 @@ img.full-logo{
       padding-left: 10px;
     }
     .form-control:focus{
-      
+
       box-shadow: none;
       border: none;
     }
@@ -270,11 +290,35 @@ img.full-logo{
     .input-group-text{
       background-color: var(--secondary-color);
       color: var(--primary-color);
-      
+
     }
 
     .input-group-text-search{
       padding: 20px;
+    }
+  }
+
+  .kubo-footer{
+    background-color: #219EBC;
+    color: var(--primary-color);
+    padding: 25px 100px;
+    a,li{
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+
+    h5{
+      font-weight: bolder;
+      font-size: 30px;
+      text-decoration: underline;
+    }
+    .kubo-footer-logo{
+      width: 100%;
+    }
+
+    .menu-col{
+      margin-left: auto;
+      padding: 0 25px;
     }
   }
 
@@ -283,3 +327,306 @@ img.full-logo{
       height: 300px;
     }
   }
+
+/* Route Information Panel Styles */
+.route-info-panel {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    z-index: 1000;
+    width: 300px;
+    max-width: 90%;
+}
+
+.route-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.route-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.route-info-item i {
+    color: #333;
+    width: 20px;
+    text-align: center;
+}
+
+.route-info-item span {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Make sure the map container has position relative */
+.map-col {
+    position: relative;
+}
+
+.payment-container{
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  flex-direction: column;
+
+  h1{
+    color: var(--primary-color);
+  }
+  .payment-col{
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    margin: 50px auto 0;
+    max-width: 661px;
+    background-color: #FFFFFF;
+    padding: 50px;
+    border-radius: 20px;
+
+    label{
+      color: var(--secondary-color);
+      font-size: 18px;
+      input:focus{
+        color: var(--secondary-color);
+      }
+    }
+
+    h4{
+        color: var(--secondary-color);
+        font-size: 18px;
+        font-weight: bolder;
+    }
+
+    input{
+      color: var(--secondary-color);
+      border-radius: 30px;
+      border-width: 2px;
+      border-color: var(--secondary-color);
+    }
+
+    .btn-kubo-alternate-second{
+        background-color: transparent;
+        color: var(--secondary-color);
+        border-color: var(--secondary-color);
+        border-width: 2px;
+        padding: .375rem .75rem;
+        text-align: left;
+        font-weight: 600;
+        margin-top: 10px;
+        pointer-events: none;
+    }
+
+    input::placeholder{
+      color: var(--secondary-color);
+    }
+    .payment-button{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .btn{
+            width: 50%;
+            font-size: 34px;
+            border-radius: 100px;
+        }
+    }
+  }
+}
+
+.kubo-badge{
+  font-size: 18px;
+  color: var(--secondary-color);
+  border: 2px solid var(--secondary-color);
+  border-radius: 30px;
+}
+.badge-container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.reservation-cont.reservation-cont-success{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  h2{
+    color: var(--secondary-color);
+    font-weight: bolder;
+    font-size: 40px;
+    font-weight: bolder;
+  }
+  p{
+    color: var(--secondary-color);
+    font-size: 18px;
+    margin-top: 25px;
+    padding: 0 35px;
+    font-weight: 400;
+  }
+  img{
+    max-width: 150px;
+    width: 100%;
+    height: auto;
+    object-fit: cover; 
+  }
+
+  .icon-links{
+    width: 100%;
+    display: flex;
+    margin-top: 25px;
+    justify-content: space-between;
+  }
+  .btn-kubo-alternate-second{
+    margin: auto;
+    padding: 5px 40px;
+    border-radius: 50px;
+    font-size: 24px;
+    border-width: 3px;
+    font-weight: bolder;
+  }
+}
+
+.room-details-container{
+
+  .room-image-col{
+    padding-right: 0;
+  }
+  .main-image-container{
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    border-radius: 20px 0px 0px 20px;
+
+  }
+  .room-images-gallery{
+    padding-bottom: 20px;
+    img{
+      height: 100%;
+      width: 100%;
+      max-width: 145px;
+      object-fit: contain;
+    }
+  }
+  .btn-kubo-alternate, .btn-secondary{
+    color: var(--primary-color);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    transition: all 0.5s ease;
+  }
+
+  .btn-kubo-alternate{
+    margin: 0 auto;
+  }
+  .btn-kubo-alternate:hover{
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+  }
+  .btn-secondary{
+    background-color: white;
+    color: var(--secondary-color);
+    border:none;
+  }
+
+  .btn-secondary:hover{
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+  }
+
+  .card{
+    height: 100%;
+  }
+  .room-info-col{
+    padding-left: 0;
+    .card{
+      border-radius: 0px 20px 20px 0px;
+      padding: 40px;
+    }
+
+    .text-guest{
+      font-size: 36px;
+      color: var(--secondary-color);
+    }
+
+    p{
+      font-size: 18px;
+      color: var(--secondary-color);
+    }
+    h2{
+      color: var(--secondary-color);
+      font-weight: bolder;
+      font-size: 40px;
+    }
+  }
+
+  .image-row{
+    height: 706px;
+  }
+}
+
+.payment-row{
+  padding-top: 150px;
+  padding-bottom: 150px;
+}
+/* Date Range Picker Styles */
+.date-range-picker {
+    position: relative;
+    width: 100%;
+}
+
+.date-range-picker input {
+    background-color: var(--primary-color);
+    border: 2px solid var(--secondary-color);
+    border-radius: 30px;
+    padding: 10px 20px;
+    width: 100%;
+    color: var(--secondary-color);
+    font-family: var(--font-family);
+}
+
+.date-range-picker input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px rgba(136, 100, 85, 0.2);
+}
+
+.flatpickr-calendar {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-family);
+}
+
+.flatpickr-day.selected {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.flatpickr-day.selected:hover {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.flatpickr-day.inRange {
+    background: rgba(136, 100, 85, 0.1);
+    border-color: var(--secondary-color);
+}
+
+.flatpickr-day.today {
+    border-color: var(--secondary-color);
+}
+
+.flatpickr-day:hover {
+    background: rgba(136, 100, 85, 0.1);
+}
