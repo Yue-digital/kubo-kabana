@@ -29,7 +29,6 @@ class DiscountResource extends Resource
                     ->unique(ignoreRecord: true)
                     ->maxLength(255)
                     ->default(fn () => strtoupper(Str::random(8)))
-                    ->disabled()
                     ->dehydrated(),
                 Forms\Components\Select::make('type')
                     ->required()
