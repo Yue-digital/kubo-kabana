@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Log;
 use App\Models\Rooms;
+use App\Models\Discount;
 use Carbon\Carbon;
 
 class PaymentController extends Controller
@@ -16,13 +17,27 @@ class PaymentController extends Controller
         $checkIn = $request->query('checkIn');
         $checkOut = $request->query('checkOut');
         $rooms = Rooms::first();
+        $discountCode = $request->query('discount_code');
+        $discount = null;
+        $discountAmount = 0;
 
         if ($checkIn && $checkOut && $rooms) {
             $totalPrice = $this->calculatePrice($rooms, $checkIn, $checkOut);
+            
+            if ($discountCode) {
+                $discount = Discount::where('code', $discountCode)->first();
+                if ($discount && $discount->isValid()) {
+                    $discountAmount = $discount->calculateDiscount($totalPrice);
+                    $totalPrice -= $discountAmount;
+                }
+            }
+            
             $rooms->total_price = $totalPrice;
+            $rooms->discount_amount = $discountAmount;
+            $rooms->original_price = $totalPrice + $discountAmount;
         }
 
-        return view('pages.payment.book', compact('checkIn', 'checkOut', 'rooms'));
+        return view('pages.payment.book', compact('checkIn', 'checkOut', 'rooms', 'discountCode'));
     }
 
     /**
@@ -73,6 +88,44 @@ class PaymentController extends Controller
         return $totalPrice;
     }
 
+    public function validateDiscount(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'amount' => 'required|numeric|min:0'
+        ]);
+
+        $discount = Discount::where('code', $request->code)->first();
+
+        if (!$discount) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid discount code.'
+            ]);
+        }
+
+        if (!$discount->isValid()) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Discount code is not valid or has expired.'
+            ]);
+        }
+
+        $discountAmount = $discount->calculateDiscount($request->amount);
+        $finalAmount = $request->amount - $discountAmount;
+
+        return response()->json([
+            'valid' => true,
+            'discount_amount' => $discountAmount,
+            'final_amount' => $finalAmount,
+            'discount' => [
+                'code' => $discount->code,
+                'type' => $discount->type,
+                'value' => $discount->value
+            ]
+        ]);
+    }
+
     public function book(Request $request)
     {
         $request->validate([
@@ -82,7 +135,16 @@ class PaymentController extends Controller
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
             'total_amount' => 'required|numeric|min:0',
+            'discount_code' => 'nullable|string',
         ]);
+
+        $discount = null;
+        if ($request->discount_code) {
+            $discount = Discount::where('code', $request->discount_code)->first();
+            if ($discount && $discount->isValid()) {
+                $discount->increment('used_count');
+            }
+        }
 
         // Store booking information in the session or database
         Booking::create([
@@ -101,30 +163,78 @@ class PaymentController extends Controller
     public function processPayment(Request $request)
     {
         try {
+            $originalAmount = $request->input('amount', 100000);
+            $discountCode = $request->input('discount_code');
+            $finalAmount = $originalAmount;
+            $discountAmount = 0;
+            $discountDetails = null;
+
+            // Apply discount if code is provided
+            if ($discountCode) {
+                $discount = Discount::where('code', $discountCode)->first();
+                if ($discount && $discount->isValid()) {
+                    $discountAmount = $discount->calculateDiscount($originalAmount);
+                    $finalAmount = $originalAmount - $discountAmount;
+                    $discountDetails = [
+                        'code' => $discount->code,
+                        'type' => $discount->type,
+                        'value' => $discount->value,
+                        'amount' => $discountAmount
+                    ];
+                }
+            }
+
             $response = Http::accept('application/json')
                 ->withBasicAuth('xnd_development_2nQJ3teo6aUVknsR74NjiIps4mmNHXfz2I8csL05uIEXJBmlJXp3ncYw5M0f', '')
                 ->post('https://api.xendit.co/v2/invoices', [
                     "external_id" => "payment-" . time(),
-                    "amount" => $request->input('amount', 100000),
+                    "amount" => $finalAmount,
                     "description" => $request->input('description', 'Room Booking Payment'),
                     "items" => [
                         [
                             "name" => $request->input('item_name', 'Room Booking'),
                             "quantity" => 1,
-                            "price" => $request->input('amount', 100000),
+                            "price" => $originalAmount,
                             "category" => "Accommodation",
                         ]
                     ],
+                    "fees" => $discountAmount > 0 ? [
+                        [
+                            "type" => "Discount",
+                            "value" => -$discountAmount,
+                            "description" => "Discount Code: " . ($discountDetails['code'] ?? '')
+                        ]
+                    ] : [],
                     "success_redirect_url" => route('payment.success'),
                     "failure_redirect_url" => route('payment.failure'),
                 ]);
 
             if ($response->successful()) {
+                // Store booking with discount information
+                $booking = Booking::create([
+                    'full_name' => $request->input('name'),
+                    'email' => $request->input('email'),
+                    'phone' => $request->input('phone'),
+                    'check_in' => $request->input('check_in'),
+                    'check_out' => $request->input('check_out'),
+                    'total' => $finalAmount,
+                    'original_amount' => $originalAmount,
+                    'discount_amount' => $discountAmount,
+                    'discount_code' => $discountCode,
+                    'status' => 'pending',
+                ]);
+
+                // Increment discount usage if applied
+                if ($discountCode && $discountAmount > 0) {
+                    Discount::where('code', $discountCode)->increment('used_count');
+                }
+
                 return redirect($response->json()['invoice_url']);
             }
 
             return back()->with('error', 'Payment processing failed. Please try again.');
         } catch (\Throwable $th) {
+            Log::error('Payment processing error: ' . $th->getMessage());
             return back()->with('error', 'An error occurred. Please try again later.');
         }
     }

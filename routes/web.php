@@ -8,7 +8,8 @@ use App\Http\Controllers\PaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about-us', [HomeController::class, 'about'])->name('about');
-
+Route::get('/gallery', [HomeController::class, 'gallery'])->name('gallery');
+Route::get('/services', [HomeController::class, 'services'])->name('services');
 Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
 Route::get('/rooms/booked-dates', [RoomController::class, 'getBookedDates'])->name('rooms.booked-dates');
 Route::post('/rooms/import-airbnb', [RoomController::class, 'importAirbnbCalendar'])->name('rooms.import-airbnb');
@@ -21,3 +22,4 @@ Route::post('/payment/book', [PaymentController::class, 'book'])->name('payment.
 Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/failure', [PaymentController::class, 'failure'])->name('payment.failure');
+Route::post('validate-discount', [PaymentController::class, 'validateDiscount'])->name('validate.discount');

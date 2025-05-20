@@ -66,4 +66,14 @@ class HomeController extends Controller
 
         return "https://maps.googleapis.com/maps/api/staticmap?key={$apiKey}&center={$lat},{$lng}&zoom={$zoom}&format=png&maptype=roadmap&style={$styleParam}&size={$width}x{$height}";
     }
+
+    public function gallery()
+    {
+        return view('pages.gallery');
+    }
+
+    public function services()
+    {
+        return view('pages.services');
+    }
 }

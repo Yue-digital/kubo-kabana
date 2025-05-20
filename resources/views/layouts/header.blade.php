@@ -11,7 +11,7 @@
                         <a class="nav-link" href="#">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Services</a>
+                        <a class="nav-link {{ request()->is('services') ? 'active' : '' }}" href="{{ url('/services') }}">Services</a>
                     </li>
                 </ul>
 
@@ -23,7 +23,7 @@
                 <!-- Right Navigation -->
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 flex-grow-1 mt-4 justify-content-around">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Gallery</a>
+                        <a class="nav-link {{ request()->is('gallery') ? 'active' : '' }}" href="{{ url('/gallery') }}">Gallery</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('rooms') ? 'active' : '' }}" href="{{ url('/rooms') }}">Room</a>
@@ -43,17 +43,6 @@
 </header>
 
 <style>
-.navbar .nav-link {
-    color: white !important;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    transition: color 0.3s ease;
-}
-
-.navbar .nav-link:hover {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
 @media (max-width: 991.98px) {
     .navbar-collapse {
         background: rgba(0, 0, 0, 0.9);
