@@ -240,6 +240,7 @@
             LEAN SEASON
             <div class="small text-muted">
               {{-- {{ \Carbon\Carbon::parse($room->lean_season_start)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($room->lean_season_end)->format('M d, Y') }} --}}
+          @endif
 </div>
 @endsection
 
