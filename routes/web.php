@@ -25,3 +25,13 @@ Route::get('/payment/failure', [PaymentController::class, 'failure'])->name('pay
 Route::post('validate-discount', [PaymentController::class, 'validateDiscount'])->name('validate.discount');
 
 Route::post('/rooms/airbnb-dates', [RoomController::class, 'getAirbnbDates'])->name('rooms.airbnb-dates');
+
+Route::get('/check', function () {
+    return [
+        'url' => url('/'),
+        'session' => session()->all(),
+        'user' => auth()->user(),
+        'csrf_token' => csrf_token(),
+        'cookies' => request()->cookies->all(),
+    ];
+});
