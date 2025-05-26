@@ -30,7 +30,9 @@ class HomeResource extends Resource
                     ->schema([
                         Forms\Components\FileUpload::make('image_path')
                             ->image()
-                            ->directory('home/gallery')
+                            ->disk('public')           // or your custom disk
+                            ->directory('uploads')
+                            ->visibility('public')
                             ->required()
                             ->imagePreviewHeight('250')
                             ->panelAspectRatio('2:1')
