@@ -17,8 +17,8 @@
                 <p>For choosing Kubo Kabana as your place to relax and unwind. Let us know what to improve more by  posting a review on our facebook page.</p>
 
                 <div class="icon-links">
-                    <a href="#" class="btn btn-kubo btn-kubo-alternate-second">HOME</a>
-                    <a href="#" class="btn btn-kubo btn-kubo-alternate-second">GALLERY</a>
+                    <a href="{{ url('/') }}" style="pointer-events: auto;" class="btn btn-kubo btn-kubo-alternate-second">HOME</a>
+                    <a href="{{ url('/gallery') }}" style="pointer-events: auto;" class="btn btn-kubo btn-kubo-alternate-second">GALLERY</a>
                 </div>
             </div>
         </div>

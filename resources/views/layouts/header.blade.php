@@ -8,7 +8,7 @@
                         <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">About Us</a>
+                        <a class="nav-link {{ request()->is('about-us') ? 'active' : '' }}" href="{{ url('about-us') }}">About Us</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('services') ? 'active' : '' }}" href="{{ url('/services') }}">Services</a>
@@ -26,10 +26,10 @@
                         <a class="nav-link {{ request()->is('gallery') ? 'active' : '' }}" href="{{ url('/gallery') }}">Gallery</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('rooms') ? 'active' : '' }}" href="{{ url('/rooms') }}">Room</a>
+                        <a class="nav-link {{ request()->is('kubo-room') ? 'active' : '' }}" href="{{ url('/kubo-room') }}">Room</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Accommodation</a>
+                        <a class="nav-link {{ request()->is('payment') ? 'active' : '' }}" href="{{ url('/payment') }}">Accommodation</a>
                     </li>
                 </ul>
 

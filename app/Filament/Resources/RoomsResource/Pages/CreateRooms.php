@@ -40,6 +40,18 @@ class CreateRooms extends CreateRecord
                     ->required()
                     ->numeric()
                     ->label('Peak Season Weekend Price'),
+                TextInput::make('cost_adult')
+                    ->required()
+                    ->numeric()
+                    ->label('Cost per Adult'),
+                TextInput::make('cost_child')
+                    ->required()
+                    ->numeric()
+                    ->label('Cost per Child'),
+                TextInput::make('cost_pet')
+                    ->required()
+                    ->numeric()
+                    ->label('Cost per Pet'),
                 FileUpload::make('image')
                     ->image()
                     ->directory('rooms')

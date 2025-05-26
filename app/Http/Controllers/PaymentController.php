@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Rooms;
 use App\Models\Discount;
 use Carbon\Carbon;
+use App\Mail\BookingConfirmationMail;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
@@ -64,16 +66,28 @@ class PaymentController extends Controller
         $totalPrice = 0;
         $currentDate = clone $checkInDate;
 
-        // Check if within peak season (April to June, December)
-        $isPeakSeason = function(Carbon $date) {
-            $month = $date->month;
-            return ($month >= 4 && $month <= 6) || $month == 12;
+        // Function to check if a date falls within a season range
+        $isDateInSeason = function(Carbon $date, $seasonStart, $seasonEnd) {
+            if (!$seasonStart || !$seasonEnd) {
+                return false;
+            }
+            
+            $dateMonthDay = $date->format('m-d');
+            $startMonthDay = Carbon::parse($seasonStart)->format('m-d');
+            $endMonthDay = Carbon::parse($seasonEnd)->format('m-d');
+            
+            // Handle case where season spans across new year
+            if ($startMonthDay > $endMonthDay) {
+                return $dateMonthDay >= $startMonthDay || $dateMonthDay <= $endMonthDay;
+            }
+            
+            return $dateMonthDay >= $startMonthDay && $dateMonthDay <= $endMonthDay;
         };
 
         // Calculate price for each night
         for ($i = 0; $i < $nights; $i++) {
             $isWeekend = $currentDate->isWeekend(); // Saturday or Sunday
-            $isPeak = $isPeakSeason($currentDate);
+            $isPeak = $isDateInSeason($currentDate, $room->peak_season_start, $room->peak_season_end);
 
             if ($isPeak) {
                 $price = $isWeekend ? $room->peak_weekend_price : $room->peak_weekday_price;
@@ -147,7 +161,7 @@ class PaymentController extends Controller
         }
 
         // Store booking information in the session or database
-        Booking::create([
+        $booking = Booking::create([
             'full_name' => $request->input('name'),
             'email' => $request->input('email'),
             'phone' => $request->input('phone'),
@@ -156,6 +170,13 @@ class PaymentController extends Controller
             'total' => $request->input('total_amount'),
             'status' => 'pending',
         ]);
+
+        // Send confirmation email
+        try {
+            Mail::to($booking->email)->send(new BookingConfirmationMail($booking));
+        } catch (\Exception $e) {
+            Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+        }
 
         return redirect()->route('payment.success');
     }

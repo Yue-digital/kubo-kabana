@@ -125,6 +125,33 @@
         margin-top: 5px;
         font-size: 0.9em;
     }
+    .airbnb-sync {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+    .airbnb-sync .input-group {
+        margin-bottom: 5px;
+    }
+    .airbnb-sync input {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    .airbnb-sync button {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    #airbnbStatus {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    #airbnbStatus.error {
+        color: #dc3545;
+    }
+    #airbnbStatus.success {
+        color: #28a745;
+    }
 </style>
 @endsection
 
@@ -139,13 +166,14 @@
     <div class="row p-5 image-row justify-content-center">
         
         <!-- Room Image Section -->
+       
         <div class="col-md-6 room-image-col">
-            <div class="mb-3 main-image-container" style="position: relative; background-image: url('{{ $rooms->galleryImages[0]->image_url }}'); background-size: cover; background-position: center;">
+            <div class="mb-3 main-image-container" style="position: relative; background-image: url('{{ $room->galleryImages[0]->image_url }}'); background-size: cover; background-position: center;">
                 
 
                 
                 <div class="d-flex room-images-gallery gap-2">
-                    @foreach($rooms->galleryImages as $image)
+                    @foreach($room->galleryImages as $image)
                         <a href="{{ $image->image_url }}" data-lightbox="room-gallery" data-title="Room Image">
                             <img src="{{ $image->image_url }}" class="img-thumbnail gallery-thumbnail" style="width: 80px;" alt="Gallery Image">
                         </a>
@@ -189,12 +217,30 @@
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary flex-fill btn-kubo-alternate btn-secondary">Prices</button>
+                    <button class="btn btn-outline-secondary flex-fill btn-kubo-alternate btn-secondary" data-bs-toggle="modal" data-bs-target="#seasonModal">Prices</button>
                     <a href="{{ route('payment.index', ['checkIn' => $checkIn, 'checkOut' => $checkOut]) }}" class="btn book-now-btn btn-kubo-alternate flex-fill">Book Now</a>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Season Modal -->
+<div class="modal fade" id="seasonModal" tabindex="-1" aria-labelledby="seasonModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3" style="border-radius: 20px;">
+      <div class="modal-header border-0">
+        <h2 class="modal-title w-100 text-center fw-bold" id="seasonModalLabel" style="color: #7B5A3A; letter-spacing: 1px;">
+          @if(isset($room) && $room->is_peak_season)
+            PEAK SEASON
+            <div class="small text-muted">
+              {{-- {{ \Carbon\Carbon::parse($room->peak_season_start)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($room->peak_season_end)->format('M d, Y') }} --}}
+            </div>
+          @else
+            LEAN SEASON
+            <div class="small text-muted">
+              {{-- {{ \Carbon\Carbon::parse($room->lean_season_start)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($room->lean_season_end)->format('M d, Y') }} --}}
+            }
 </div>
 @endsection
 
@@ -294,7 +340,47 @@
                 initializeDatePicker();
             });
 
-        function initializeDatePicker() {
+        function initializeDatePicker(airbnbUrl = null) {
+            let bookedDates = [];
+            let isAirbnbLoading = false;
+
+            // Function to fetch Airbnb dates
+            async function fetchAirbnbDates(url) {
+                if (!url) return [];
+                
+                isAirbnbLoading = true;
+                try {
+                    const response = await fetch('/rooms/airbnb-dates', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ airbnb_url: url })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.error) {
+                        console.error('Airbnb fetch error:', data.error);
+                        return [];
+                    }
+                    return data.booked_dates;
+                } catch (error) {
+                    console.error('Error fetching Airbnb dates:', error);
+                    return [];
+                } finally {
+                    isAirbnbLoading = false;
+                }
+            }
+
+            // Function to update date picker with new dates
+            function updateDatePicker(dates) {
+                if (fp) {
+                    fp.set('disable', dates);
+                    fp.redraw();
+                }
+            }
+
             // Initialize Flatpickr
             const fp = flatpickr(dateRangeInput, {
                 mode: "range",
@@ -312,15 +398,12 @@
                 },
                 onSelect: function(selectedDates, dateStr, instance) {
                     if (selectedDates.length === 1) {
-                        // Update URL with first date
                         const newUrl = window.location.pathname + 
                             `?check_in=${formatDateToYYYYMMDD(selectedDates[0])}`;
                         window.history.pushState({}, '', newUrl);
                     }
                 },
                 onChange: function(selectedDates, dateStr, instance) {
-                    console.log('Date selection changed:', selectedDates); // Debug log
-                    
                     if (selectedDates.length === 2) {
                         const startDate = selectedDates[0];
                         const endDate = selectedDates[1];
@@ -332,7 +415,6 @@
                         });
 
                         if (hasOverlap) {
-                            // Clear selection if there's an overlap
                             instance.clear();
                             checkDatesBtn.textContent = originalButtonText;
                             if (bookNowBtn) {
@@ -341,85 +423,77 @@
                             }
                             alert('Selected dates overlap with booked dates. Please choose different dates.');
                             
-                            // Remove date parameters from URL
                             const newUrl = window.location.pathname;
                             window.history.pushState({}, '', newUrl);
                             return;
                         }
                         
-                        // Update button text with selected dates
                         checkDatesBtn.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                        
-                        // Update the Book Now button with selected dates
                         updateBookNowButton(startDate, endDate);
                         
-                        // Update URL parameters
                         const newUrl = window.location.pathname + 
                             `?check_in=${formatDateToYYYYMMDD(startDate)}&check_out=${formatDateToYYYYMMDD(endDate)}`;
                         window.history.pushState({}, '', newUrl);
                         
-                        // Hide the date picker after selection
                         datePickerContainer.classList.remove('show');
                     } else if (selectedDates.length === 0) {
-                        // Reset button text if dates are cleared
                         checkDatesBtn.textContent = originalButtonText;
                         if (bookNowBtn) {
                             const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
                             bookNowBtn.setAttribute('href', baseUrl);
                         }
                         
-                        // Remove date parameters from URL
                         const newUrl = window.location.pathname;
                         window.history.pushState({}, '', newUrl);
                     }
                 }
             });
 
-            // Toggle date picker when clicking the button
-            checkDatesBtn.addEventListener('click', () => {
-                datePickerContainer.classList.toggle('show');
-                if (datePickerContainer.classList.contains('show')) {
-                    fp.open();
+            // Add Airbnb URL input and sync button
+            const airbnbContainer = document.createElement('div');
+            airbnbContainer.className = 'airbnb-sync mt-2';
+            airbnbContainer.innerHTML = `
+                <div class="input-group">
+                    <input type="text" id="airbnbUrl" class="form-control" placeholder="Enter Airbnb listing URL">
+                    <button id="syncAirbnb" class="btn btn-outline-secondary">Sync Airbnb</button>
+                </div>
+                <div id="airbnbStatus" class="small text-muted mt-1"></div>
+            `;
+            datePickerContainer.appendChild(airbnbContainer);
+
+            // Handle Airbnb sync
+            const syncButton = document.getElementById('syncAirbnb');
+            const airbnbUrlInput = document.getElementById('airbnbUrl');
+            const airbnbStatus = document.getElementById('airbnbStatus');
+
+            syncButton.addEventListener('click', async function() {
+                const url = airbnbUrlInput.value.trim();
+                if (!url) {
+                    airbnbStatus.textContent = 'Please enter an Airbnb URL';
+                    return;
+                }
+
+                syncButton.disabled = true;
+                airbnbStatus.textContent = 'Syncing with Airbnb...';
+
+                try {
+                    const airbnbDates = await fetchAirbnbDates(url);
+                    bookedDates = [...new Set([...bookedDates, ...airbnbDates])]; // Merge and remove duplicates
+                    updateDatePicker(bookedDates);
+                    airbnbStatus.textContent = `Successfully synced ${airbnbDates.length} dates from Airbnb`;
+                } catch (error) {
+                    airbnbStatus.textContent = 'Failed to sync with Airbnb';
+                    console.error('Airbnb sync error:', error);
+                } finally {
+                    syncButton.disabled = false;
                 }
             });
 
-            // Close date picker when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!datePickerContainer.contains(e.target) && !checkDatesBtn.contains(e.target)) {
-                    datePickerContainer.classList.remove('show');
-                }
-            });
+            return fp;
         }
 
-        // Airbnb import functionality
-        $('#importAirbnb').on('click', function() {
-            const airbnbUrl = $('#airbnbUrl').val();
-            const importStatus = $('#importStatus');
-            
-            if (!airbnbUrl) {
-                importStatus.html('<div class="error">Please enter an Airbnb URL</div>');
-                return;
-            }
-
-            importStatus.html('<div>Importing calendar...</div>');
-            
-            $.ajax({
-                url: '/rooms/import-airbnb',
-                method: 'POST',
-                data: {
-                    airbnb_url: airbnbUrl,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    importStatus.html(`<div class="success">${response.message}</div>`);
-                    // Refresh the date picker to show new blocked dates
-                    location.reload();
-                },
-                error: function(xhr) {
-                    importStatus.html(`<div class="error">${xhr.responseJSON?.error || 'Failed to import calendar'}</div>`);
-                }
-            });
-        });
+        // Initialize the date picker
+        const fp = initializeDatePicker();
     });
 </script>
 @endsection

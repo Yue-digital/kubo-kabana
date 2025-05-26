@@ -56,6 +56,18 @@ class RoomsResource extends Resource
                     ->required()
                     ->numeric()
                     ->default(0),
+                Forms\Components\DatePicker::make('peak_season_start')
+                    ->required()
+                    ->label('Peak Season Start Date'),
+                Forms\Components\DatePicker::make('peak_season_end')
+                    ->required()
+                    ->label('Peak Season End Date'),
+                Forms\Components\DatePicker::make('lean_season_start')
+                    ->required()
+                    ->label('Lean Season Start Date'),
+                Forms\Components\DatePicker::make('lean_season_end')
+                    ->required()
+                    ->label('Lean Season End Date'),
             ]);
     }
 
@@ -79,6 +91,18 @@ class RoomsResource extends Resource
                 Tables\Columns\TextColumn::make('peak_weekend_price')
                     ->numeric()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('peak_season_start')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('peak_season_end')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('lean_season_start')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('lean_season_end')
+                    ->date()
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('Image'),
                 Tables\Columns\TextColumn::make('amenities')

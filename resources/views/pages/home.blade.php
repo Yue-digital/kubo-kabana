@@ -21,7 +21,7 @@
                     <img src="{{Storage::url('/kubo-hero.png')}}" alt="">
                     </p>
                     <div class="mt-4 text-center">
-                        <a href="{{ route('rooms') }}" class="btn btn-light btn-lg btn-kubo">
+                        <a href="{{ route('kubo-room') }}" class="btn btn-light btn-lg btn-kubo">
                             Barangay Beneg, Botalan, Zambales
                         </a>
                     </div>
@@ -38,11 +38,11 @@
                     <form action="{{ route('kubo-room') }}" method="GET" class="row g-3 align-items-center">
                         <div class="col-md-4">
                             <label for="check_in" class="form-label">Start Date</label>
-                            <input type="date" class="form-control" id="check_in" name="check_in" required>
+                            <input type="date" class="form-control" id="check_in" name="check_in" min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}" required>
                         </div>
                         <div class="col-md-4">
                             <label for="check_out" class="form-label">End Date</label>
-                            <input type="date" class="form-control" id="check_out" name="check_out" required>
+                            <input type="date" class="form-control" id="check_out" name="check_out" min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}" required>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="submit" class="btn btn-kubo w-100">Check Availability</button>
@@ -78,7 +78,7 @@
                     <h2>FEATURES</h2>
                     <p>The resort  features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi -Fi access for guests who want to surf the net.</p>
 
-                    <a href="#" class="btn btn-lg btn-kubo">SERVICES</a>
+                    <a href="{{ route('services') }}" class="btn btn-lg btn-kubo">SERVICES</a>
                 </div>
             </div>
         </div>
@@ -89,24 +89,23 @@
             <div class="col-md-12 swiper-col">
                 <div class="swiper">
                     <div class="swiper-wrapper">
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 1" />
-                      </div>
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 2" />
-                      </div>
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 3" />
-                      </div>
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 4" />
-                      </div>
+                        @if($home && $home->galleryImages)
+                            @foreach($home->galleryImages as $image)
+                                <div class="swiper-slide">
+                                    <img src="{{ Storage::url($image->image_path) }}" alt="{{ $image->caption ?? 'Gallery Image' }}" />
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="swiper-slide">
+                                <img src="{{Storage::url('/slider-1.png')}}" alt="Default Image" />
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Navigation buttons -->
                     <div class="swiper-button-next"></div>
                     <div class="swiper-button-prev"></div>
-                  </div>
+                </div>
             </div>
 
             <div class="col-md-12 map-col position-relative">
@@ -126,5 +125,24 @@
         </div>
     </div>
 
+
+@endsection
+
+
+@section('additional-js')
+
+
+<script>
+    document.getElementById('check_in').addEventListener('change', function() {
+        const startDate = this.value;
+        const endDateInput = document.getElementById('check_out');
+        endDateInput.min = startDate;
+        
+        // If end date is before start date, reset it
+        if (endDateInput.value && endDateInput.value < startDate) {
+            endDateInput.value = startDate;
+        }
+    });
+</script>
 
 @endsection

@@ -3,19 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rooms;
+use App\Models\Home;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
+
         $featuredRooms = Rooms::take(3)->get();
         $lat = 15.27995630433838;
         $lng = 120.00453604999998;
     
         $mapUrl = $this->generateGoogleStaticMap($lat, $lng);
 
-        return view('pages.home', compact('featuredRooms', 'mapUrl'));
+        $home = Home::with('galleryImages')->first();
+        return view('pages.home', compact('home','featuredRooms', 'mapUrl'));
     }
 
     public function about()

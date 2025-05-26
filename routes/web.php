@@ -23,3 +23,5 @@ Route::post('/payment/process', [PaymentController::class, 'processPayment'])->n
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/failure', [PaymentController::class, 'failure'])->name('payment.failure');
 Route::post('validate-discount', [PaymentController::class, 'validateDiscount'])->name('validate.discount');
+
+Route::post('/rooms/airbnb-dates', [RoomController::class, 'getAirbnbDates'])->name('rooms.airbnb-dates');

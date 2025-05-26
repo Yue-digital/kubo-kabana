@@ -1,1 +1,9 @@
 !.gitignore
+
+
+# Ignore all files in the storage/app/public/images directory
+images/*
+
+# Ignore all files in the storage/app/public/images/gallery directory
+images/gallery/*
+

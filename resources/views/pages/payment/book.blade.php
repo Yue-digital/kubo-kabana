@@ -1,6 +1,28 @@
 @extends('pages.payment.index')
 @section('payment_content')
 
+<!-- Add Flatpickr CSS in the head section -->
+@section('additional-css')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .flatpickr-calendar {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 3px 13px rgba(0,0,0,0.08);
+    }
+    .flatpickr-day.blocked {
+        background: #ffebee;
+        color: #d32f2f;
+        text-decoration: line-through;
+        cursor: not-allowed;
+    }
+    .flatpickr-day.blocked:hover {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+</style>
+@endsection
+
 <div class="col-md-12"> <h1 class="text-center">ACCOMODATION</h1></div>
         <div class="col-md-5"></div>
         <div class="col-md-6 payment-col">
@@ -107,8 +129,141 @@
 @endsection
 
 @section('additional-js')
+<!-- Add Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add validation for number of guests
+    const numGuestsInput = document.getElementById('num_guests');
+    
+    numGuestsInput.addEventListener('input', function() {
+        const value = parseInt(this.value);
+        if (value > 20) {
+            this.value = 20;
+            alert('Maximum number of guests is 20');
+        }
+    });
+
+    numGuestsInput.addEventListener('keypress', function(e) {
+        const value = parseInt(this.value + e.key);
+        if (value > 20) {
+            e.preventDefault();
+            alert('Maximum number of guests is 20');
+        }
+    });
+
+    // Add validation for additional inputs (adults, children, pets)
+    const additionalInputs = ['add_adult', 'add_child', 'pet'];
+    
+    additionalInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        
+        input.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value > 5) {
+                this.value = 5;
+                alert(`Maximum number of ${inputId === 'add_adult' ? 'additional adults' : inputId === 'add_child' ? 'children' : 'pets'} is 5`);
+            }
+        });
+
+        input.addEventListener('keypress', function(e) {
+            const value = parseInt(this.value + e.key);
+            if (value > 5) {
+                e.preventDefault();
+                alert(`Maximum number of ${inputId === 'add_adult' ? 'additional adults' : inputId === 'add_child' ? 'children' : 'pets'} is 5`);
+            }
+        });
+    });
+
+    // Fetch booked dates
+    fetch('/rooms/booked-dates')
+        .then(response => response.json())
+        .then(bookedDates => {
+            const checkInInput = document.getElementById('check_in');
+            const checkOutInput = document.getElementById('check_out');
+
+            // Set min date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+
+            // Initialize Flatpickr for check-in
+            const checkInPicker = flatpickr(checkInInput, {
+                minDate: tomorrowFormatted,
+                dateFormat: "Y-m-d",
+                disable: bookedDates,
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length > 0) {
+                        // Update check-out min date to the selected check-in date
+                        checkOutPicker.set('minDate', selectedDates[0]);
+                        
+                        // If check-out date is before check-in date, update it
+                        if (checkOutPicker.selectedDates[0] && checkOutPicker.selectedDates[0] < selectedDates[0]) {
+                            checkOutPicker.setDate(selectedDates[0]);
+                        }
+                    }
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    // Add visual indicator for blocked dates
+                    if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
+                        dayElem.classList.add('blocked');
+                    }
+                }
+            });
+
+            // Initialize Flatpickr for check-out
+            const checkOutPicker = flatpickr(checkOutInput, {
+                minDate: tomorrowFormatted,
+                dateFormat: "Y-m-d",
+                disable: bookedDates,
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length > 0) {
+                        const checkInDate = new Date(checkInInput.value);
+                        const checkOutDate = selectedDates[0];
+                        
+                        // Ensure check-out date is not before check-in date
+                        if (checkOutDate < checkInDate) {
+                            checkOutPicker.setDate(checkInDate);
+                            return;
+                        }
+                        
+                        // Check if any date in the range is booked
+                        let currentDate = new Date(checkInDate);
+                        while (currentDate <= checkOutDate) {
+                            const dateStr = currentDate.toISOString().split('T')[0];
+                            if (bookedDates.includes(dateStr)) {
+                                // Find next available date
+                                let nextDate = new Date(currentDate);
+                                nextDate.setDate(nextDate.getDate() + 1);
+                                while (bookedDates.includes(nextDate.toISOString().split('T')[0])) {
+                                    nextDate.setDate(nextDate.getDate() + 1);
+                                }
+                                checkOutPicker.setDate(nextDate);
+                                alert('Selected date range includes booked dates. End date has been adjusted.');
+                                break;
+                            }
+                            currentDate.setDate(currentDate.getDate() + 1);
+                        }
+                    }
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    // Add visual indicator for blocked dates
+                    if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
+                        dayElem.classList.add('blocked');
+                    }
+                }
+            });
+
+            // Set initial min date for check-out based on check-in value if it exists
+            if (checkInInput.value) {
+                checkOutPicker.set('minDate', checkInInput.value);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching booked dates:', error);
+        });
+
+    // Existing discount code functionality
     document.getElementById('applyDiscount').addEventListener('click', function() {
         const code = document.getElementById('discount_code').value;
         const amount = document.getElementById('original_amount_input').value;
