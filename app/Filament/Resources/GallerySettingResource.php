@@ -31,9 +31,6 @@ class GallerySettingResource extends Resource
                     ->required()
                     ->maxSize(20480) // 20 MB
                     ->imagePreviewHeight('250')
-                    ->deleteUploadedFileUsing(function ($file) {
-                        \Storage::disk('public')->delete($file);
-                    })
                     ->label('Image'),
             ]);
     }
