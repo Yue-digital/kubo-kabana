@@ -25,7 +25,14 @@ class GallerySettingResource extends Resource
             ->schema([
                 Forms\Components\FileUpload::make('image')
                     ->image()
-                    ->directory('gallery')
+                    ->disk('public')
+                    ->directory('uploads')
+                    ->visibility('public')
+                    ->required()
+                    ->imagePreviewHeight('250')
+                    ->deleteUploadedFileUsing(function ($file) {
+                        \Storage::disk('public')->delete($file);
+                    })
                     ->label('Image'),
             ]);
     }
