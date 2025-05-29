@@ -71,9 +71,8 @@ class HomeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('galleryImages.caption')
-                    ->label('Images')
-                    ->listWithLineBreaks(),
+                Tables\Columns\TextColumn::make('Home Page')
+                    ->state('Home Page'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
