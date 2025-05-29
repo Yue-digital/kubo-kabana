@@ -41,7 +41,7 @@ class HomeResource extends Resource
                     ->schema([
                         Forms\Components\FileUpload::make('image_path')
                             ->image()
-                            ->disk('pubic')
+                            ->disk('public')
                             ->directory('uploads')
                             ->visibility('public')
                             ->required()
