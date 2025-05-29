@@ -135,44 +135,93 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Add validation for number of guests
     const numGuestsInput = document.getElementById('num_guests');
-    
+    const addAdultInput = document.getElementById('add_adult');
+    const addChildInput = document.getElementById('add_child');
+    const petInput = document.getElementById('pet');
+
+    // Function to calculate total guests
+    function calculateTotalGuests() {
+        const baseGuests = parseInt(numGuestsInput.value) || 0;
+        const additionalAdults = parseInt(addAdultInput.value) || 0;
+        const children = parseInt(addChildInput.value) || 0;
+        const pets = parseInt(petInput.value) || 0;
+
+        // Calculate total additional people (adults + children)
+        const totalAdditional = additionalAdults + children;
+
+        // Check if total additional people exceeds 5
+        if (totalAdditional > 5) {
+            alert('Additional guests limit: 5 people maximum (adults and children combined).\nCurrent additional guests: ' + totalAdditional);
+            // Reset the last changed input to maintain the total under 5
+            const lastChanged = document.activeElement;
+            if (lastChanged && (lastChanged.id === 'add_adult' || lastChanged.id === 'add_child')) {
+                lastChanged.value = Math.max(0, 5 - (totalAdditional - parseInt(lastChanged.value)));
+            }
+        }
+
+        // Calculate total including pets
+        const total = baseGuests + totalAdditional + pets;
+
+        if (total > 25) {
+            alert('Total capacity limit: 25 people maximum.\n\nCurrent breakdown:\n- Base guests: ' + baseGuests + '\n- Additional guests: ' + totalAdditional + '\n- Pets: ' + pets + '\n\nTotal: ' + total);
+            // Reset the last changed input to maintain the total under 25
+            const lastChanged = document.activeElement;
+            if (lastChanged) {
+                lastChanged.value = Math.max(0, 25 - (total - parseInt(lastChanged.value)));
+            }
+        }
+
+        return total;
+    }
+
+    // Add event listeners for additional adults and children
+    [addAdultInput, addChildInput].forEach(input => {
+        input.addEventListener('input', calculateTotalGuests);
+        input.addEventListener('keypress', function(e) {
+            const additionalAdults = parseInt(addAdultInput.value) || 0;
+            const children = parseInt(addChildInput.value) || 0;
+            const totalAdditional = additionalAdults + children;
+
+            if (this.id === 'add_adult') {
+                if (totalAdditional + parseInt(e.key) > 5) {
+                    e.preventDefault();
+                    alert('Additional guests limit: 5 people maximum (adults and children combined).\nCurrent additional guests: ' + totalAdditional);
+                }
+            } else if (this.id === 'add_child') {
+                if (totalAdditional + parseInt(e.key) > 5) {
+                    e.preventDefault();
+                    alert('Additional guests limit: 5 people maximum (adults and children combined).\nCurrent additional guests: ' + totalAdditional);
+                }
+            }
+        });
+    });
+
+    // Special handling for pets
+    petInput.addEventListener('input', calculateTotalGuests);
+    petInput.addEventListener('keypress', function(e) {
+        const value = parseInt(this.value + e.key);
+        if (value > 5) {
+            e.preventDefault();
+            alert('Pets limit: 5 maximum.\nCurrent pets: ' + this.value);
+        }
+    });
+
+    // Special handling for base guests with max of 20
     numGuestsInput.addEventListener('input', function() {
         const value = parseInt(this.value);
         if (value > 20) {
             this.value = 20;
-            alert('Maximum number of guests is 20');
+            alert('Base guests limit: 20 people maximum.\nCurrent base guests: ' + value);
         }
+        calculateTotalGuests();
     });
 
     numGuestsInput.addEventListener('keypress', function(e) {
         const value = parseInt(this.value + e.key);
         if (value > 20) {
             e.preventDefault();
-            alert('Maximum number of guests is 20');
+            alert('Base guests limit: 20 people maximum.\nCurrent base guests: ' + this.value);
         }
-    });
-
-    // Add validation for additional inputs (adults, children, pets)
-    const additionalInputs = ['add_adult', 'add_child', 'pet'];
-    
-    additionalInputs.forEach(inputId => {
-        const input = document.getElementById(inputId);
-        
-        input.addEventListener('input', function() {
-            const value = parseInt(this.value);
-            if (value > 5) {
-                this.value = 5;
-                alert(`Maximum number of ${inputId === 'add_adult' ? 'additional adults' : inputId === 'add_child' ? 'children' : 'pets'} is 5`);
-            }
-        });
-
-        input.addEventListener('keypress', function(e) {
-            const value = parseInt(this.value + e.key);
-            if (value > 5) {
-                e.preventDefault();
-                alert(`Maximum number of ${inputId === 'add_adult' ? 'additional adults' : inputId === 'add_child' ? 'children' : 'pets'} is 5`);
-            }
-        });
     });
 
     // Fetch booked dates
@@ -196,11 +245,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (selectedDates.length > 0) {
                         // Update check-out min date to the selected check-in date
                         checkOutPicker.set('minDate', selectedDates[0]);
-                        
+
                         // If check-out date is before check-in date, update it
                         if (checkOutPicker.selectedDates[0] && checkOutPicker.selectedDates[0] < selectedDates[0]) {
                             checkOutPicker.setDate(selectedDates[0]);
                         }
+
+                        // Calculate and validate the date range
+                        validateDateRange(selectedDates[0], checkOutPicker.selectedDates[0]);
                     }
                 },
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
@@ -220,30 +272,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (selectedDates.length > 0) {
                         const checkInDate = new Date(checkInInput.value);
                         const checkOutDate = selectedDates[0];
-                        
+
                         // Ensure check-out date is not before check-in date
                         if (checkOutDate < checkInDate) {
                             checkOutPicker.setDate(checkInDate);
                             return;
                         }
-                        
-                        // Check if any date in the range is booked
-                        let currentDate = new Date(checkInDate);
-                        while (currentDate <= checkOutDate) {
-                            const dateStr = currentDate.toISOString().split('T')[0];
-                            if (bookedDates.includes(dateStr)) {
-                                // Find next available date
-                                let nextDate = new Date(currentDate);
-                                nextDate.setDate(nextDate.getDate() + 1);
-                                while (bookedDates.includes(nextDate.toISOString().split('T')[0])) {
-                                    nextDate.setDate(nextDate.getDate() + 1);
-                                }
-                                checkOutPicker.setDate(nextDate);
-                                alert('Selected date range includes booked dates. End date has been adjusted.');
-                                break;
-                            }
-                            currentDate.setDate(currentDate.getDate() + 1);
-                        }
+
+                        // Calculate and validate the date range
+                        validateDateRange(checkInDate, checkOutDate);
                     }
                 },
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
@@ -252,6 +289,157 @@ document.addEventListener('DOMContentLoaded', function() {
                         dayElem.classList.add('blocked');
                     }
                 }
+            });
+
+            // Function to validate date range and calculate duration
+            function validateDateRange(checkIn, checkOut) {
+                if (!checkIn || !checkOut) return;
+
+                // Calculate duration in days
+                const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+                // Check if any date in the range is booked
+                let currentDate = new Date(checkIn);
+                let hasBookedDates = false;
+
+                while (currentDate <= checkOut) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    if (bookedDates.includes(dateStr)) {
+                        hasBookedDates = true;
+                        break;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                if (hasBookedDates) {
+                    // Find next available date
+                    let nextDate = new Date(checkOut);
+                    nextDate.setDate(nextDate.getDate() + 1);
+                    while (bookedDates.includes(nextDate.toISOString().split('T')[0])) {
+                        nextDate.setDate(nextDate.getDate() + 1);
+                    }
+                    checkOutPicker.setDate(nextDate);
+                    alert('Selected date range includes booked dates. End date has been adjusted.');
+                    return;
+                }
+
+                // Validate minimum stay (if needed)
+                if (duration < 1) {
+                    alert('Check-out date must be after check-in date');
+                    checkOutPicker.setDate(new Date(checkIn.getTime() + 24 * 60 * 60 * 1000));
+                    return;
+                }
+
+                // Validate maximum stay (if needed)
+                const MAX_STAY_DAYS = 30; // Adjust this value as needed
+                if (duration > MAX_STAY_DAYS) {
+                    alert(`Maximum stay duration is ${MAX_STAY_DAYS} days`);
+                    const maxDate = new Date(checkIn);
+                    maxDate.setDate(maxDate.getDate() + MAX_STAY_DAYS);
+                    checkOutPicker.setDate(maxDate);
+                    return;
+                }
+
+                // If all validations pass, you can trigger any additional calculations here
+                // For example, calculating the total price based on duration
+                calculateTotalPrice(duration);
+            }
+
+            // Function to calculate total price based on duration
+            function calculateTotalPrice(duration) {
+                // Get the base price and costs from the room data
+                const basePrice = {{ $rooms->lean_weekday_price ?? 0 }}; // Use the base room price
+                const costPerAdult = {{ $rooms->cost_adult ?? 0 }};
+                const costPerChild = {{ $rooms->cost_child ?? 0 }};
+                const costPerPet = {{ $rooms->cost_pet ?? 0 }};
+
+                // Get the number of additional guests
+                const additionalAdults = parseInt(addAdultInput.value) || 0;
+                const children = parseInt(addChildInput.value) || 0;
+                const pets = parseInt(petInput.value) || 0;
+
+                // Calculate base price for the entire stay
+                const totalBasePrice = basePrice * duration;
+
+                // Calculate additional costs per night
+                const additionalAdultsCost = additionalAdults * costPerAdult * duration;
+                const childrenCost = children * costPerChild * duration;
+                const petsCost = pets * costPerPet * duration;
+
+                // Calculate total price
+                const totalPrice = totalBasePrice + additionalAdultsCost + childrenCost + petsCost;
+
+                // Update the price display
+                const priceContainer = document.querySelector('.text-kubo');
+                if (priceContainer) {
+                    let priceHtml = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Base Price (${duration} nights):</span>
+                            <span>₱${totalBasePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>`;
+
+                    if (additionalAdultsCost > 0) {
+                        priceHtml += `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Additional Adults (${additionalAdults} × ₱${costPerAdult}/night):</span>
+                                <span>₱${additionalAdultsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>`;
+                    }
+
+                    if (childrenCost > 0) {
+                        priceHtml += `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Children (${children} × ₱${costPerChild}/night):</span>
+                                <span>₱${childrenCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>`;
+                    }
+
+                    if (petsCost > 0) {
+                        priceHtml += `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Pets (${pets} × ₱${costPerPet}/night):</span>
+                                <span>₱${petsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>`;
+                    }
+
+                    priceHtml += `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Total Amount:</span>
+                            <span class="btn btn-kubo btn-kubo-alternate-second">₱${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>`;
+
+                    priceContainer.innerHTML = priceHtml;
+                }
+
+                // Update hidden input fields
+                document.getElementById('total_amount_input').value = totalPrice;
+                document.getElementById('original_amount_input').value = totalPrice;
+            }
+
+            // Add event listeners for price calculation
+            [addAdultInput, addChildInput, petInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    const checkIn = document.getElementById('check_in').value;
+                    const checkOut = document.getElementById('check_out').value;
+                    if (checkIn && checkOut) {
+                        const checkInDate = new Date(checkIn);
+                        const checkOutDate = new Date(checkOut);
+                        const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                        calculateTotalPrice(duration);
+                    }
+                });
+            });
+
+            // Also calculate price when dates change
+            [checkInInput, checkOutInput].forEach(input => {
+                input.addEventListener('change', function() {
+                    if (checkInInput.value && checkOutInput.value) {
+                        const checkInDate = new Date(checkInInput.value);
+                        const checkOutDate = new Date(checkOutInput.value);
+                        const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                        calculateTotalPrice(duration);
+                    }
+                });
             });
 
             // Set initial min date for check-out based on check-in value if it exists
@@ -292,11 +480,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.valid) {
                 discountMessage.innerHTML = '<span class="text-success">Discount applied successfully!</span>';
-                
+
                 // Update the form with new amounts
                 document.getElementById('total_amount_input').value = data.final_amount;
                 document.getElementById('discount_amount_input').value = data.discount_amount;
-                
+
                 // Update the displayed prices
                 const priceContainer = document.querySelector('.text-kubo');
                 const originalPrice = Number(amount);

@@ -62,13 +62,19 @@
                 <div class="contact">
                     <div class="phone">
                         <img class="kubo-icon" src="{{Storage::url('/phone.png')}}" alt="">
-                        <a href="tel:+63915 723 41 64">+63915 723 41 64</a>
-                        <a href="tel:+02403-52-24">Manila (02) 403-52-24</a>
+                        @if($home->phone)
+                            <a href="tel:{{ $home->phone }}">{{ $home->phone }}</a>
+                        @endif
+                        @if($home->landline)
+                            <a href="tel:{{ $home->landline }}">{{ $home->landline }}</a>
+                        @endif
                     </div>
 
                     <div class="email">
                         <img class="kubo-icon" src="{{Storage::url('/mail.png')}}" alt="">
-                        <a href="mailto:eesanchez@kubokabana.com">eesanchez@kubokabana.com</a>
+                        @if($home->email)
+                            <a href="mailto:{{ $home->email }}">{{ $home->email }}</a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -76,7 +82,7 @@
             <div class="col-md-6 feature-col">
                 <div class="content">
                     <h2>FEATURES</h2>
-                    <p>The resort  features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi -Fi access for guests who want to surf the net.</p>
+                    <p>{!! $home->feature_content ?? 'The resort features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi-Fi access for guests who want to surf the net.' !!}</p>
 
                     <a href="{{ route('services') }}" class="btn btn-lg btn-kubo">SERVICES</a>
                 </div>
@@ -137,7 +143,7 @@
         const startDate = this.value;
         const endDateInput = document.getElementById('check_out');
         endDateInput.min = startDate;
-        
+
         // If end date is before start date, reset it
         if (endDateInput.value && endDateInput.value < startDate) {
             endDateInput.value = startDate;

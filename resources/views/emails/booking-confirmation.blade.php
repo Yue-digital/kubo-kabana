@@ -64,9 +64,20 @@
 
         <div class="footer">
             <p>Warm regards,<br>Kubo Kabana Beach & Resort</p>
-            <p>📞 +639157234164</p>
+            @if($home = \App\Models\Home::first())
+                @if($home->phone)
+                    <p>📞 {{ $home->phone }}</p>
+                @endif
+                @if($home->landline)
+                    <p>📞 {{ $home->landline }}</p>
+                @endif
+                @if($home->email)
+                    <p>📧 {{ $home->email }}</p>
+                @endif
+            @endif
+            <p>📍 Barangay Beneg, Botalan, Zambales</p>
             <p>This is an automated message, please do not reply directly to this email.</p>
         </div>
     </div>
 </body>
-</html> 
+</html>

@@ -122,7 +122,7 @@ src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1_oxw3virUdjwJPaVyuKnSZr
 
                 calculateAndDisplayRoute(place.geometry.location, destination);
             });
-        }, 2000); // 2-second delay
+        }, 5000); // 2-second delay
     }
 
     function calculateAndDisplayRoute(origin, destination) {

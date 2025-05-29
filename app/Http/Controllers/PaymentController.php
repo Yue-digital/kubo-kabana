@@ -25,7 +25,7 @@ class PaymentController extends Controller
 
         if ($checkIn && $checkOut && $rooms) {
             $totalPrice = $this->calculatePrice($rooms, $checkIn, $checkOut);
-            
+
             if ($discountCode) {
                 $discount = Discount::where('code', $discountCode)->first();
                 if ($discount && $discount->isValid()) {
@@ -33,7 +33,7 @@ class PaymentController extends Controller
                     $totalPrice -= $discountAmount;
                 }
             }
-            
+
             $rooms->total_price = $totalPrice;
             $rooms->discount_amount = $discountAmount;
             $rooms->original_price = $totalPrice + $discountAmount;
@@ -71,16 +71,16 @@ class PaymentController extends Controller
             if (!$seasonStart || !$seasonEnd) {
                 return false;
             }
-            
+
             $dateMonthDay = $date->format('m-d');
             $startMonthDay = Carbon::parse($seasonStart)->format('m-d');
             $endMonthDay = Carbon::parse($seasonEnd)->format('m-d');
-            
+
             // Handle case where season spans across new year
             if ($startMonthDay > $endMonthDay) {
                 return $dateMonthDay >= $startMonthDay || $dateMonthDay <= $endMonthDay;
             }
-            
+
             return $dateMonthDay >= $startMonthDay && $dateMonthDay <= $endMonthDay;
         };
 
@@ -150,6 +150,11 @@ class PaymentController extends Controller
             'check_out' => 'required|date|after:check_in',
             'total_amount' => 'required|numeric|min:0',
             'discount_code' => 'nullable|string',
+            'original_amount' => 'required|numeric|min:0',
+            'discount_amount' => 'required|numeric|min:0',
+            'add_adult' => 'nullable|integer|min:0',
+            'add_child' => 'nullable|integer|min:0',
+            'pet' => 'nullable|integer|min:0',
         ]);
 
         $discount = null;
@@ -168,6 +173,12 @@ class PaymentController extends Controller
             'check_in' => $request->input('check_in'),
             'check_out' => $request->input('check_out'),
             'total' => $request->input('total_amount'),
+            'original_amount' => $request->input('original_amount'),
+            'discount_amount' => $request->input('discount_amount'),
+            'discount_code' => $request->input('discount_code'),
+            'additional_adults' => $request->input('add_adult', 0),
+            'additional_children' => $request->input('add_child', 0),
+            'additional_pets' => $request->input('pet', 0),
             'status' => 'pending',
         ]);
 
@@ -189,6 +200,25 @@ class PaymentController extends Controller
             $finalAmount = $originalAmount;
             $discountAmount = 0;
             $discountDetails = null;
+
+            // Calculate additional costs
+            $additionalAdults = $request->input('additional_adults', 0);
+            $additionalChildren = $request->input('additional_children', 0);
+            $additionalPets = $request->input('additional_pets', 0);
+
+            // Define rates (you may want to move these to a configuration file)
+            $adultRate = 50000; // 50,000 per additional adult
+            $childRate = 25000; // 25,000 per additional child
+            $petRate = 15000;   // 15,000 per additional pet
+
+            // Calculate additional costs
+            $additionalCosts = ($additionalAdults * $adultRate) +
+                             ($additionalChildren * $childRate) +
+                             ($additionalPets * $petRate);
+
+            // Add additional costs to original amount
+            $originalAmount += $additionalCosts;
+            $finalAmount = $originalAmount;
 
             // Apply discount if code is provided
             if ($discountCode) {
@@ -219,13 +249,27 @@ class PaymentController extends Controller
                             "category" => "Accommodation",
                         ]
                     ],
-                    "fees" => $discountAmount > 0 ? [
-                        [
-                            "type" => "Discount",
-                            "value" => -$discountAmount,
-                            "description" => "Discount Code: " . ($discountDetails['code'] ?? '')
-                        ]
-                    ] : [],
+                    "fees" => array_merge(
+                        $discountAmount > 0 ? [
+                            [
+                                "type" => "Discount",
+                                "value" => -$discountAmount,
+                                "description" => "Discount Code: " . ($discountDetails['code'] ?? '')
+                            ]
+                        ] : [],
+                        $additionalCosts > 0 ? [
+                            [
+                                "type" => "Additional Costs",
+                                "value" => $additionalCosts,
+                                "description" => sprintf(
+                                    "Additional guests: %d adults, %d children, %d pets",
+                                    $additionalAdults,
+                                    $additionalChildren,
+                                    $additionalPets
+                                )
+                            ]
+                        ] : []
+                    ),
                     "success_redirect_url" => route('payment.success'),
                     "failure_redirect_url" => route('payment.failure'),
                 ]);
@@ -242,6 +286,9 @@ class PaymentController extends Controller
                     'original_amount' => $originalAmount,
                     'discount_amount' => $discountAmount,
                     'discount_code' => $discountCode,
+                    'additional_adults' => $request->input('additional_adults', 0),
+                    'additional_children' => $request->input('additional_children', 0),
+                    'additional_pets' => $request->input('additional_pets', 0),
                     'status' => 'pending',
                 ]);
 

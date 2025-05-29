@@ -16,6 +16,9 @@
                 color: #023047 !important;
             }
         }
+        .services-swiper {
+            overflow: hidden;
+        }
     </style>
 @endsection
 
@@ -46,7 +49,7 @@
 @section('content')
 
 <div class="container-fluid services-container">
-    <div class="row">
+    <div class="row m-0">
         <div class="col-md-12 services-content">
             <h1>Services</h1>
 
@@ -64,12 +67,12 @@
                     <div class="col-md-5 services-card">
                         <h2>PAVILION</h2>
                         <p>The pavilion is the perfect spot to eat your deliciously prepared food. Take pleasure at the al fresco dining by the beachfront while enjoying the beautiful ocean views. </p>
-    
+
                         <img src="{{Storage::url('/cutlery 1.png')}}" alt="">
                     </div>
-    
+
                 </div>
-    
+
                 <div class="row swiper-slide services-card-row reverse-row">
                     <div class="col-md-5 service-image">
                         <img src="{{Storage::url('/DSC03184 1.png')}}" alt="">
@@ -77,12 +80,12 @@
                     <div class="col-md-5 services-card">
                         <h2>PAVILION</h2>
                         <p>The pavilion is the perfect spot to eat your deliciously prepared food. Take pleasure at the al fresco dining by the beachfront while enjoying the beautiful ocean views. </p>
-    
+
                         <img src="{{Storage::url('/cutlery 1.png')}}" alt="">
                     </div>
-    
+
                 </div>
-    
+
                 <div class="row swiper-slide services-card-row">
                     <div class="col-md-5 service-image">
                         <img src="{{Storage::url('/DSC03184 1.png')}}" alt="">
@@ -90,10 +93,10 @@
                     <div class="col-md-5 services-card">
                         <h2>PAVILION</h2>
                         <p>The pavilion is the perfect spot to eat your deliciously prepared food. Take pleasure at the al fresco dining by the beachfront while enjoying the beautiful ocean views. </p>
-        
+
                         <img src="{{Storage::url('/cutlery 1.png')}}" alt="">
                     </div>
-        
+
                 </div>
 
 
@@ -102,11 +105,11 @@
             <div class="swiper-button-prev"></div>
             <div class="swiper-button-next"></div>
         </div>
-        
-        
-       
 
-        
+
+
+
+
     </div>
 </div>
 @endsection

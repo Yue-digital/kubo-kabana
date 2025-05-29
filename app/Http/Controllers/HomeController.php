@@ -14,7 +14,7 @@ class HomeController extends Controller
         $featuredRooms = Rooms::take(3)->get();
         $lat = 15.27995630433838;
         $lng = 120.00453604999998;
-    
+
         $mapUrl = $this->generateGoogleStaticMap($lat, $lng);
 
         $home = Home::with('galleryImages')->first();
@@ -26,10 +26,11 @@ class HomeController extends Controller
         $featuredRooms = Rooms::take(3)->get();
         $lat = 15.27995630433838;
         $lng = 120.00453604999998;
-    
-        $mapUrl = $this->generateGoogleStaticMap($lat, $lng);
 
-        return view('pages.about', compact('featuredRooms', 'mapUrl'));
+        $mapUrl = $this->generateGoogleStaticMap($lat, $lng);
+        $home = Home::with('galleryImages')->first();
+
+        return view('pages.about', compact('featuredRooms', 'mapUrl','home'));
     }
 
     private function generateGoogleStaticMap($lat, $lng, $zoom = 18, $width = 1700, $height = 900)

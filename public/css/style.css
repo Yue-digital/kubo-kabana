@@ -436,7 +436,7 @@ img.full-logo{
         justify-content: center;
         .btn{
             width: 50%;
-            font-size: 34px;
+            font-size: 24px;
             border-radius: 100px;
         }
     }
@@ -478,7 +478,7 @@ img.full-logo{
     max-width: 150px;
     width: 100%;
     height: auto;
-    object-fit: cover; 
+    object-fit: cover;
   }
 
   .icon-links{
@@ -689,7 +689,7 @@ img.full-logo{
     margin-bottom: 50px;
     width: 50%;
   }
-  
+
   .services-content{
     display: flex;
     flex-direction: column;
@@ -710,7 +710,7 @@ img.full-logo{
 
   .swiper-button-next, .swiper-rtl .swiper-button-prev {
     right: var(--swiper-navigation-sides-offset, 20px);
-  } 
+  }
   .swiper-button-prev, .swiper-rtl .swiper-button-next {
     left: var(--swiper-navigation-sides-offset, 20px);
     right: auto;
@@ -719,7 +719,7 @@ img.full-logo{
   .services-card-container{
 
 
-   
+
     .swiper-slide{
       box-shadow: none;
       display: flex;

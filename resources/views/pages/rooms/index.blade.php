@@ -164,14 +164,14 @@
         </div>
     </div>
     <div class="row p-5 image-row justify-content-center">
-        
+
         <!-- Room Image Section -->
-       
+
         <div class="col-md-6 room-image-col">
             <div class="mb-3 main-image-container" style="position: relative; background-image: url('{{ $room->galleryImages[0]->image_url }}'); background-size: cover; background-position: center;">
-                
 
-                
+
+
                 <div class="d-flex room-images-gallery gap-2">
                     @foreach($room->galleryImages as $image)
                         <a href="{{ $image->image_url }}" data-lightbox="room-gallery" data-title="Room Image">
@@ -182,8 +182,8 @@
 
             </div>
 
-            
-            
+
+
         </div>
         <!-- Room Info Section -->
         <div class="col-md-5 room-info-col">
@@ -229,7 +229,7 @@
 <div class="modal fade" id="seasonModal" tabindex="-1" aria-labelledby="seasonModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content p-3" style="border-radius: 20px;">
-      <div class="modal-header border-0">
+      <div class="modal-header pb-0 border-0">
         <h2 class="modal-title w-100 text-center fw-bold" id="seasonModalLabel" style="color: #7B5A3A; letter-spacing: 1px;">
           @if(isset($room) && $room->is_peak_season)
             PEAK SEASON
@@ -240,7 +240,47 @@
             LEAN SEASON
             <div class="small text-muted">
               {{-- {{ \Carbon\Carbon::parse($room->lean_season_start)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($room->lean_season_end)->format('M d, Y') }} --}}
+            </div>
           @endif
+        </h2>
+      </div>
+      <div class="modal-body pt-0 text-center">
+        <div class="text-start mt-4" style="color: #7B5A3A;">
+          @if(isset($room) && $room->is_peak_season)
+            <strong>Weekday rate (Monday – Friday)</strong><br>
+            Php {{ number_format($room->peak_weekday_price) }} per kubo
+            <ul>
+              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
+              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php 500</li>
+            </ul>
+            <strong>Weekend rate (Saturday & Sunday)</strong><br>
+            Php {{ number_format($room->peak_weekend_price) }} per kubo
+            <ul>
+              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
+              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php 500</li>
+            </ul>
+          @else
+            <strong>Weekday rate (Monday – Friday)</strong><br>
+            Php {{ number_format($room->lean_weekday_price) }} per kubo
+            <ul>
+              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
+              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php 500</li>
+            </ul>
+            <strong>Weekend rate (Saturday & Sunday)</strong><br>
+            Php {{ number_format($room->lean_weekend_price) }} per kubo
+            <ul>
+              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
+              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php 500</li>
+            </ul>
+          @endif
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection
 
@@ -271,8 +311,8 @@
 
         // Format date to readable format
         function formatDate(date) {
-            return date.toLocaleDateString('en-US', { 
-                month: 'short', 
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
                 day: 'numeric',
                 year: 'numeric'
             });
@@ -311,7 +351,7 @@
             .then(dates => {
                 bookedDates = dates;
                 initializeDatePicker();
-                
+
                 // Check if current selection overlaps with booked dates
                 if (checkIn && checkOut) {
                     const startDate = new Date(checkIn);
@@ -328,7 +368,7 @@
                             const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
                             bookNowBtn.setAttribute('href', baseUrl);
                         }
-                        
+
                         // Remove date parameters from URL
                         const newUrl = window.location.pathname;
                         window.history.pushState({}, '', newUrl);
@@ -347,7 +387,7 @@
             // Function to fetch Airbnb dates
             async function fetchAirbnbDates(url) {
                 if (!url) return [];
-                
+
                 isAirbnbLoading = true;
                 try {
                     const response = await fetch('/rooms/airbnb-dates', {
@@ -358,7 +398,7 @@
                         },
                         body: JSON.stringify({ airbnb_url: url })
                     });
-                    
+
                     const data = await response.json();
                     if (data.error) {
                         console.error('Airbnb fetch error:', data.error);
@@ -398,7 +438,7 @@
                 },
                 onSelect: function(selectedDates, dateStr, instance) {
                     if (selectedDates.length === 1) {
-                        const newUrl = window.location.pathname + 
+                        const newUrl = window.location.pathname +
                             `?check_in=${formatDateToYYYYMMDD(selectedDates[0])}`;
                         window.history.pushState({}, '', newUrl);
                     }
@@ -407,7 +447,7 @@
                     if (selectedDates.length === 2) {
                         const startDate = selectedDates[0];
                         const endDate = selectedDates[1];
-                        
+
                         // Check if selection overlaps with booked dates
                         const hasOverlap = bookedDates.some(date => {
                             const bookedDate = new Date(date);
@@ -422,19 +462,19 @@
                                 bookNowBtn.setAttribute('href', baseUrl);
                             }
                             alert('Selected dates overlap with booked dates. Please choose different dates.');
-                            
+
                             const newUrl = window.location.pathname;
                             window.history.pushState({}, '', newUrl);
                             return;
                         }
-                        
+
                         checkDatesBtn.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
                         updateBookNowButton(startDate, endDate);
-                        
-                        const newUrl = window.location.pathname + 
+
+                        const newUrl = window.location.pathname +
                             `?check_in=${formatDateToYYYYMMDD(startDate)}&check_out=${formatDateToYYYYMMDD(endDate)}`;
                         window.history.pushState({}, '', newUrl);
-                        
+
                         datePickerContainer.classList.remove('show');
                     } else if (selectedDates.length === 0) {
                         checkDatesBtn.textContent = originalButtonText;
@@ -442,7 +482,7 @@
                             const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
                             bookNowBtn.setAttribute('href', baseUrl);
                         }
-                        
+
                         const newUrl = window.location.pathname;
                         window.history.pushState({}, '', newUrl);
                     }

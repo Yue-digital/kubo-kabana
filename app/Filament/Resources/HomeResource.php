@@ -23,14 +23,25 @@ class HomeResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $socialFields = collect(config('social.platforms'))->map(function ($platform, $key) {
+            return Forms\Components\TextInput::make($key)
+                ->label($platform['label'])
+                ->placeholder($platform['placeholder'])
+                ->columnSpan('half');
+        })->toArray();
+
         return $form
             ->schema([
+                Forms\Components\RichEditor::make('feature_content')
+                    ->label('Feature Content')
+                    ->columnSpanFull(),
+                ...$socialFields,
                 Forms\Components\Repeater::make('galleryImages')
                     ->relationship()
                     ->schema([
                         Forms\Components\FileUpload::make('image_path')
                             ->image()
-                            ->disk('public')           // or your custom disk
+                            ->disk('public')
                             ->directory('uploads')
                             ->visibility('public')
                             ->required()
@@ -106,4 +117,4 @@ class HomeResource extends Resource
     {
         return static::getModel()::count() === 0;
     }
-} 
+}

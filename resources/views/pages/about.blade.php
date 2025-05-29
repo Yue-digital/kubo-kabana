@@ -62,13 +62,19 @@
                 <div class="contact">
                     <div class="phone">
                         <img class="kubo-icon" src="{{Storage::url('/phone.png')}}" alt="">
-                        <a href="tel:+63915 723 41 64">+63915 723 41 64</a>
-                        <a href="tel:+02403-52-24">Manila (02) 403-52-24</a>
+                        @if($home->phone)
+                            <a href="tel:{{ $home->phone }}">{{ $home->phone }}</a>
+                        @endif
+                        @if($home->landline)
+                            <a href="tel:{{ $home->landline }}">{{ $home->landline }}</a>
+                        @endif
                     </div>
 
                     <div class="email">
                         <img class="kubo-icon" src="{{Storage::url('/mail.png')}}" alt="">
-                        <a href="mailto:eesanchez@kubokabana.com">eesanchez@kubokabana.com</a>
+                        @if($home->email)
+                            <a href="mailto:{{ $home->email }}">{{ $home->email }}</a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -77,7 +83,7 @@
                 <div class="content">
                     <h2>About Us</h2>
                     <p>The resort  features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi -Fi access for guests who want to surf the net.</p>
-    
+
                     <a href="#" class="btn btn-lg btn-kubo">SERVICES</a>
                 </div>
             </div>
@@ -89,20 +95,19 @@
             <div class="col-md-12 swiper-col">
                 <div class="swiper">
                     <div class="swiper-wrapper">
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 1" />
-                      </div>
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 2" />
-                      </div>
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 3" />
-                      </div>
-                      <div class="swiper-slide">
-                        <img src="{{Storage::url('/slider-1.png')}}" alt="Image 4" />
-                      </div>
+                        @if($home && $home->galleryImages)
+                            @foreach($home->galleryImages as $image)
+                                <div class="swiper-slide">
+                                    <img src="{{ Storage::url($image->image_path) }}" alt="{{ $image->caption ?? 'Gallery Image' }}" />
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="swiper-slide">
+                                <img src="{{Storage::url('/slider-1.png')}}" alt="Default Image" />
+                            </div>
+                        @endif
                     </div>
-                
+
                     <!-- Navigation buttons -->
                     <div class="swiper-button-next"></div>
                     <div class="swiper-button-prev"></div>
@@ -126,5 +131,5 @@
         </div>
     </div>
 
-    
+
 @endsection
