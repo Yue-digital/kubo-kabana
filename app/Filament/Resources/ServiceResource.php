@@ -33,13 +33,12 @@ class ServiceResource extends Resource
                 Forms\Components\FileUpload::make('image')
                     ->image()
                     ->directory('services')
+                    ->disk('public')
+                    ->visibility('public')
                     ->required()
                     ->imagePreviewHeight('250')
                     ->panelAspectRatio('2:1')
-                    ->panelLayout('integrated')
-                    ->deleteUploadedFileUsing(function ($file) {
-                        \Storage::disk('public')->delete($file);
-                    }),
+                    ->panelLayout('integrated'),
                 Forms\Components\FileUpload::make('icon')
                     ->image()
                     ->directory('services')
