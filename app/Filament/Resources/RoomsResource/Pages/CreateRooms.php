@@ -67,14 +67,41 @@ class CreateRooms extends CreateRecord
                     ->directory('rooms/gallery')
                     ->label('Gallery Images')
                     ->columnSpanFull(),
-                TextInput::make('amenities')
-                    ->maxLength(255)
-                    ->label('Amenities (comma-separated)'),
-                TextInput::make('num_guest')
+                \Filament\Forms\Components\TextInput::make('amenities')
+                    ->label('Amenities (comma-separated)')
+                    ->helperText('Enter amenities separated by commas (e.g., WiFi, Air Conditioning, TV)')
+                    ->columnSpanFull(),
+                \Filament\Forms\Components\KeyValue::make('amenity_quantities')
+                    ->label('Amenity Quantities')
+                    ->keyLabel('Amenity')
+                    ->valueLabel('Quantity')
+                    ->default([])
+                    ->columnSpanFull(),
+                TextInput::make('min_guest')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Minimum Number of Guests'),
+                TextInput::make('max_guest')
                     ->required()
                     ->numeric()
                     ->default(0)
                     ->label('Maximum Number of Guests'),
+                TextInput::make('max_child')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Maximum Number of Children'),
+                TextInput::make('max_child_age')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Maximum Child Age'),
+                TextInput::make('additional_bedding_cost')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Additional Bedding cost'),
             ]);
     }
 

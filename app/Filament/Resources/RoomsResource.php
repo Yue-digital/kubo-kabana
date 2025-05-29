@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\RoomsResource\Pages;
 use App\Filament\Resources\RoomsResource\RelationManagers;
 use App\Models\Rooms;
+use App\Models\Amenity;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -50,8 +51,9 @@ class RoomsResource extends Resource
                     ->directory('rooms')
                     ->label('Main Image'),
                 Forms\Components\TextInput::make('amenities')
-                    ->maxLength(255)
-                    ->default(null),
+                    ->label('Amenities (comma-separated)')
+                    ->helperText('Enter amenities separated by commas (e.g., WiFi, Air Conditioning, TV)')
+                    ->columnSpanFull(),
                 Forms\Components\TextInput::make('num_guest')
                     ->required()
                     ->numeric()
@@ -105,7 +107,8 @@ class RoomsResource extends Resource
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('Image'),
-                Tables\Columns\TextColumn::make('amenities')
+                Tables\Columns\TextColumn::make('amenities.name')
+                    ->listWithLineBreaks()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('num_guest')
                     ->numeric()

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Rooms;
 use App\Models\Home;
+use App\Models\Service;
+use App\Models\GallerySetting;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -73,11 +75,13 @@ class HomeController extends Controller
 
     public function gallery()
     {
-        return view('pages.gallery');
+        $gallerySettings = GallerySetting::all();
+        return view('pages.gallery', compact('gallerySettings'));
     }
 
     public function services()
     {
-        return view('pages.services');
+        $services = Service::all();
+        return view('pages.services', compact('services'));
     }
 }

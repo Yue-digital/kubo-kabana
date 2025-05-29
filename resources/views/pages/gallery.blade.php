@@ -24,14 +24,9 @@
         </div>
 
         <div class="col-md-12 gallery-images">
-            <a href="{{Storage::url('/pic1.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic1.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic2.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic2.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic3.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic3.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic4.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic4.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic5.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic5.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic6.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic6.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic7.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic7.png')}}" alt=""></a>
-            <a href="{{Storage::url('/pic8.png')}}" data-lightbox="gallery"><img src="{{Storage::url('/pic8.png')}}" alt=""></a>
+            @foreach ($gallerySettings as $gallerySetting)
+                <a href="{{Storage::url($gallerySetting->image)}}" data-lightbox="gallery"><img src="{{Storage::url($gallerySetting->image)}}" alt=""></a>
+            @endforeach
         </div>
 
 

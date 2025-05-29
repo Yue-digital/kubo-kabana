@@ -2,6 +2,8 @@
 
 @section('additional-css')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 <style>
     body{
         background-color: #886455;
@@ -89,69 +91,6 @@
     .flatpickr-day.blocked:hover {
         background-color: #ffebee;
     }
-    /* Airbnb import styles */
-    .airbnb-import {
-        margin-top: 10px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
-    .airbnb-import input {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    .airbnb-import button {
-        width: 100%;
-        padding: 8px;
-        background: #FF5A5F;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .airbnb-import button:hover {
-        background: #E31C5F;
-    }
-    .airbnb-import .error {
-        color: #dc3545;
-        margin-top: 5px;
-        font-size: 0.9em;
-    }
-    .airbnb-import .success {
-        color: #28a745;
-        margin-top: 5px;
-        font-size: 0.9em;
-    }
-    .airbnb-sync {
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-    .airbnb-sync .input-group {
-        margin-bottom: 5px;
-    }
-    .airbnb-sync input {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-    .airbnb-sync button {
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-    }
-    #airbnbStatus {
-        font-size: 0.875rem;
-        color: #6c757d;
-    }
-    #airbnbStatus.error {
-        color: #dc3545;
-    }
-    #airbnbStatus.success {
-        color: #28a745;
-    }
 </style>
 @endsection
 
@@ -188,30 +127,24 @@
         <!-- Room Info Section -->
         <div class="col-md-5 room-info-col">
             <div class="card d-flex shadow-sm">
-                <h2 class="fw-bold mb-1">Buhay Kubo</h2>
+                <h2 class="fw-bold mb-1">{{ $room->name }}</h2>
                 <div class="mb-2 text-guest ">
-                    <i class="fa fa-users"></i> 4-5 guests
+                    <i class="fa fa-users"></i> {{ $room->min_guest }} - {{ $room->max_guest }} guests
                 </div>
                 <p class="mb-3">
-                    Kubo Kabana native air conditioned hut guest rooms is composed of two (2) double deck beds. A breath taking view of the beach from its balcony where you can enjoy your meal and drinks is a perfect blend of comfort and style.
+                    {{ $room->description }}
                 </p>
                 <div class="mb-3 badge-container">
-                    <span class="badge bg-light kubo-badge me-1">4 Beds</span>
-                    <span class="badge bg-light kubo-badge me-1">1 Shower</span>
-                    <span class="badge bg-light kubo-badge me-1">2 Outlets</span>
-                    <span class="badge bg-light kubo-badge me-1">1 Aircon</span>
-                    <span class="badge bg-light kubo-badge me-1">1 Toilet</span>
-                    <span class="badge bg-light kubo-badge me-1">Ocean View</span>
+                    @foreach(explode(',', $room->amenities) as $amenity)
+                        <span class="badge bg-light kubo-badge me-1">
+                            {{ trim($amenity) }}
+                        </span>
+                    @endforeach
                 </div>
                 <div class="d-grid mt-auto gap-2 mb-2">
                     <div class="button-container  text-center">
                         <div class="date-picker-container" id="datePickerContainer">
                             <input type="text" id="dateRange" class="form-control" placeholder="Select dates" readonly>
-                            {{-- <div class="airbnb-import">
-                                <input type="text" id="airbnbUrl" placeholder="Enter Airbnb listing URL" class="form-control">
-                                <button id="importAirbnb" class="btn">Import Airbnb Calendar</button>
-                                <div id="importStatus"></div>
-                            </div> --}}
                         </div>
                         <button class="btn btn-kubo-alternate" id="checkDatesBtn">Check Available Dates</button>
                     </div>
@@ -250,31 +183,31 @@
             <strong>Weekday rate (Monday – Friday)</strong><br>
             Php {{ number_format($room->peak_weekday_price) }} per kubo
             <ul>
-              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
-              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
-              <li>If requested, additional beddings will cost Php 500</li>
+              <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
+              <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
             <strong>Weekend rate (Saturday & Sunday)</strong><br>
             Php {{ number_format($room->peak_weekend_price) }} per kubo
             <ul>
-              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
-              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
-              <li>If requested, additional beddings will cost Php 500</li>
+              <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
+              <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
           @else
             <strong>Weekday rate (Monday – Friday)</strong><br>
             Php {{ number_format($room->lean_weekday_price) }} per kubo
             <ul>
-              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
-              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
-              <li>If requested, additional beddings will cost Php 500</li>
+              <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
+              <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
             <strong>Weekend rate (Saturday & Sunday)</strong><br>
             Php {{ number_format($room->lean_weekend_price) }} per kubo
             <ul>
-              <li>Minimum of 4 adult guests and maximum of 5 adult guests.</li>
-              <li>Maximum of 2 kids aged 0 - 8 years old. <span style="color: #b08a60;">(free of charge)</span></li>
-              <li>If requested, additional beddings will cost Php 500</li>
+              <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
+              <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
+              <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
           @endif
         </div>
@@ -287,6 +220,7 @@
 @section('additional-js')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     $(document).ready(function() {
         lightbox.option({
@@ -332,103 +266,34 @@
                 const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
                 const newHref = `${baseUrl}?checkIn=${formatDateToYYYYMMDD(startDate)}&checkOut=${formatDateToYYYYMMDD(endDate)}`;
                 bookNowBtn.setAttribute('href', newHref);
-                console.log('Updated Book Now button href:', newHref); // Debug log
             }
         }
 
-        // Set initial button text and Book Now href if dates are in URL
-        if (checkIn && checkOut) {
-            const startDate = new Date(checkIn);
-            const endDate = new Date(checkOut);
-            checkDatesBtn.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-            updateBookNowButton(startDate, endDate);
-        }
+        // Initialize Flatpickr
+        let fp = null;
 
-        // Fetch booked dates
-        let bookedDates = [];
-        fetch('/rooms/booked-dates')
-            .then(response => response.json())
-            .then(dates => {
-                bookedDates = dates;
-                initializeDatePicker();
-
-                // Check if current selection overlaps with booked dates
-                if (checkIn && checkOut) {
-                    const startDate = new Date(checkIn);
-                    const endDate = new Date(checkOut);
-                    const hasOverlap = bookedDates.some(date => {
-                        const bookedDate = new Date(date);
-                        return bookedDate >= startDate && bookedDate <= endDate;
-                    });
-
-                    if (hasOverlap) {
-                        // Reset the selection if there's an overlap
-                        checkDatesBtn.textContent = originalButtonText;
-                        if (bookNowBtn) {
-                            const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
-                            bookNowBtn.setAttribute('href', baseUrl);
-                        }
-
-                        // Remove date parameters from URL
-                        const newUrl = window.location.pathname;
-                        window.history.pushState({}, '', newUrl);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching booked dates:', error);
-                initializeDatePicker();
-            });
-
-        function initializeDatePicker(airbnbUrl = null) {
-            let bookedDates = [];
-            let isAirbnbLoading = false;
-
-            // Function to fetch Airbnb dates
-            async function fetchAirbnbDates(url) {
-                if (!url) return [];
-
-                isAirbnbLoading = true;
-                try {
-                    const response = await fetch('/rooms/airbnb-dates', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({ airbnb_url: url })
-                    });
-
-                    const data = await response.json();
-                    if (data.error) {
-                        console.error('Airbnb fetch error:', data.error);
-                        return [];
-                    }
-                    return data.booked_dates;
-                } catch (error) {
-                    console.error('Error fetching Airbnb dates:', error);
-                    return [];
-                } finally {
-                    isAirbnbLoading = false;
-                }
+        function initializeDatePicker() {
+            // Clear any existing instance
+            if (fp) {
+                fp.destroy();
             }
 
-            // Function to update date picker with new dates
-            function updateDatePicker(dates) {
-                if (fp) {
-                    fp.set('disable', dates);
-                    fp.redraw();
-                }
+            // Set initial dates if they exist in URL
+            let defaultDates = [];
+            if (checkIn && checkOut) {
+                defaultDates = [checkIn, checkOut];
+                checkDatesBtn.textContent = `${formatDate(new Date(checkIn))} - ${formatDate(new Date(checkOut))}`;
+                updateBookNowButton(new Date(checkIn), new Date(checkOut));
             }
 
             // Initialize Flatpickr
-            const fp = flatpickr(dateRangeInput, {
+            fp = flatpickr(dateRangeInput, {
                 mode: "range",
                 dateFormat: "Y-m-d",
                 minDate: "today",
                 disableMobile: "true",
                 theme: "material_blue",
-                defaultDate: checkIn && checkOut ? [checkIn, checkOut] : undefined,
+                defaultDate: defaultDates,
                 disable: bookedDates,
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
                     // Add visual indicator for blocked dates
@@ -489,51 +354,54 @@
                 }
             });
 
-            // Add Airbnb URL input and sync button
-            const airbnbContainer = document.createElement('div');
-            airbnbContainer.className = 'airbnb-sync mt-2';
-            airbnbContainer.innerHTML = `
-                <div class="input-group">
-                    <input type="text" id="airbnbUrl" class="form-control" placeholder="Enter Airbnb listing URL">
-                    <button id="syncAirbnb" class="btn btn-outline-secondary">Sync Airbnb</button>
-                </div>
-                <div id="airbnbStatus" class="small text-muted mt-1"></div>
-            `;
-            datePickerContainer.appendChild(airbnbContainer);
-
-            // Handle Airbnb sync
-            const syncButton = document.getElementById('syncAirbnb');
-            const airbnbUrlInput = document.getElementById('airbnbUrl');
-            const airbnbStatus = document.getElementById('airbnbStatus');
-
-            syncButton.addEventListener('click', async function() {
-                const url = airbnbUrlInput.value.trim();
-                if (!url) {
-                    airbnbStatus.textContent = 'Please enter an Airbnb URL';
-                    return;
-                }
-
-                syncButton.disabled = true;
-                airbnbStatus.textContent = 'Syncing with Airbnb...';
-
-                try {
-                    const airbnbDates = await fetchAirbnbDates(url);
-                    bookedDates = [...new Set([...bookedDates, ...airbnbDates])]; // Merge and remove duplicates
-                    updateDatePicker(bookedDates);
-                    airbnbStatus.textContent = `Successfully synced ${airbnbDates.length} dates from Airbnb`;
-                } catch (error) {
-                    airbnbStatus.textContent = 'Failed to sync with Airbnb';
-                    console.error('Airbnb sync error:', error);
-                } finally {
-                    syncButton.disabled = false;
-                }
+            // Toggle date picker container
+            checkDatesBtn.addEventListener('click', function() {
+                datePickerContainer.classList.toggle('show');
             });
 
-            return fp;
+            // Close date picker when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!datePickerContainer.contains(event.target) && !checkDatesBtn.contains(event.target)) {
+                    datePickerContainer.classList.remove('show');
+                }
+            });
         }
 
-        // Initialize the date picker
-        const fp = initializeDatePicker();
+        // Fetch booked dates and initialize date picker
+        let bookedDates = [];
+        fetch('/rooms/booked-dates')
+            .then(response => response.json())
+            .then(dates => {
+                bookedDates = dates;
+                initializeDatePicker();
+
+                // Check if current selection overlaps with booked dates
+                if (checkIn && checkOut) {
+                    const startDate = new Date(checkIn);
+                    const endDate = new Date(checkOut);
+                    const hasOverlap = bookedDates.some(date => {
+                        const bookedDate = new Date(date);
+                        return bookedDate >= startDate && bookedDate <= endDate;
+                    });
+
+                    if (hasOverlap) {
+                        // Reset the selection if there's an overlap
+                        checkDatesBtn.textContent = originalButtonText;
+                        if (bookNowBtn) {
+                            const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
+                            bookNowBtn.setAttribute('href', baseUrl);
+                        }
+
+                        // Remove date parameters from URL
+                        const newUrl = window.location.pathname;
+                        window.history.pushState({}, '', newUrl);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching booked dates:', error);
+                initializeDatePicker();
+            });
     });
 </script>
 @endsection

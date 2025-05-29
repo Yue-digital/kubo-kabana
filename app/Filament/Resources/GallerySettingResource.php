@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AboutResource\Pages;
-use App\Filament\Resources\AboutResource\RelationManagers;
-use App\Models\About;
+use App\Filament\Resources\GallerySettingResource\Pages;
+use App\Filament\Resources\GallerySettingResource\RelationManagers;
+use App\Models\GallerySetting;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,12 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class AboutResource extends Resource
+class GallerySettingResource extends Resource
 {
-    protected static ?string $model = About::class;
-
-    protected static ?string $modelLabel = 'About Us ';
-
+    protected static ?string $model = GallerySetting::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -26,9 +23,10 @@ class AboutResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\RichEditor::make('description')
-                    ->label('Description')
-                    ->required(),
+                Forms\Components\FileUpload::make('image')
+                    ->image()
+                    ->directory('gallery')
+                    ->label('Image'),
             ]);
     }
 
@@ -37,8 +35,8 @@ class AboutResource extends Resource
         return $table
             ->columns([
                 //
-                Tables\Columns\TextColumn::make('About')
-                    ->state('About Page')
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Image'),
             ])
             ->filters([
                 //
@@ -63,19 +61,9 @@ class AboutResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAbouts::route('/'),
-            'create' => Pages\CreateAbout::route('/create'),
-            'edit' => Pages\EditAbout::route('/{record}/edit'),
+            'index' => Pages\ListGallerySettings::route('/'),
+            'create' => Pages\CreateGallerySetting::route('/create'),
+            'edit' => Pages\EditGallerySetting::route('/{record}/edit'),
         ];
-    }
-
-    public static function shouldCheckAccess(): bool
-    {
-        return true;
-    }
-
-    public static function canCreate(): bool
-    {
-        return static::getModel()::count() === 0;
     }
 }

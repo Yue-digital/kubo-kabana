@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Rooms extends Model
 {
@@ -17,7 +18,11 @@ class Rooms extends Model
         'image',
         'gallery',
         'amenities',
-        'num_guest'
+        'num_guest',
+        'peak_season_start',
+        'peak_season_end',
+        'lean_season_start',
+        'lean_season_end',
     ];
 
     public function galleryImages(): HasMany

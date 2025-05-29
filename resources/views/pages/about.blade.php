@@ -82,9 +82,9 @@
             <div class="col-md-6 feature-col">
                 <div class="content">
                     <h2>About Us</h2>
-                    <p>The resort  features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi -Fi access for guests who want to surf the net.</p>
+                    <p>{!! $home->feature_content ?? 'The resort features 5 Kubos with balconies each. Equipped with 24/7 CCTV cameras, the resort ensures your safety and security while inside the premises. It also has a pavilion where guests can dine and relax while enjoying the ocean view. It also has Wi-Fi access for guests who want to surf the net.' !!}</p>
 
-                    <a href="#" class="btn btn-lg btn-kubo">SERVICES</a>
+                    <a href="{{ route('services') }}" class="btn btn-lg btn-kubo">SERVICES</a>
                 </div>
             </div>
         </div>

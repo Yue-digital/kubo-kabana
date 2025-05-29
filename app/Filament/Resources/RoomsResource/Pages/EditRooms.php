@@ -60,12 +60,34 @@ class EditRooms extends EditRecord
                         \Storage::disk('public')->delete($file);
                     }),
                 \Filament\Forms\Components\TextInput::make('amenities')
-                    ->maxLength(255)
-                    ->default(null),
-                \Filament\Forms\Components\TextInput::make('num_guest')
+                    ->label('Amenities (comma-separated)')
+                    ->helperText('Enter amenities separated by commas (e.g., WiFi, Air Conditioning, TV)')
+                    ->columnSpanFull(),
+                \Filament\Forms\Components\TextInput::make('min_guest')
                     ->required()
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->label('Minimum Number of Guests'),
+                \Filament\Forms\Components\TextInput::make('max_guest')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Maximum Number of Guests'),
+                \Filament\Forms\Components\TextInput::make('max_child')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Maximum Number of Children'),
+                \Filament\Forms\Components\TextInput::make('max_child_age')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Maximum Child Age'),
+                \Filament\Forms\Components\TextInput::make('additional_bedding_cost')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->label('Additional Bedding cost'),
                 \Filament\Forms\Components\DatePicker::make('peak_season_start')
                     ->required()
                     ->label('Peak Season Start Date'),

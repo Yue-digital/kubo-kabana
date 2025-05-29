@@ -60,44 +60,21 @@
 
         <div class="services-swiper">
             <div class="col-md-12 services-card-container swiper-wrapper">
+                @foreach ($services as $service)
                 <div class="row swiper-slide services-card-row">
                     <div class="col-md-5 service-image">
-                        <img src="{{Storage::url('/DSC03184 1.png')}}" alt="">
+                        <img src="{{Storage::url($service->image)}}" alt="">
                     </div>
                     <div class="col-md-5 services-card">
-                        <h2>PAVILION</h2>
-                        <p>The pavilion is the perfect spot to eat your deliciously prepared food. Take pleasure at the al fresco dining by the beachfront while enjoying the beautiful ocean views. </p>
+                        <h2>{{ $service->name }}</h2>
+                        <p>{{ $service->description }} </p>
 
-                        <img src="{{Storage::url('/cutlery 1.png')}}" alt="">
+                        <img src="{{Storage::url($service->icon)}}" alt="">
                     </div>
 
                 </div>
+                @endforeach
 
-                <div class="row swiper-slide services-card-row reverse-row">
-                    <div class="col-md-5 service-image">
-                        <img src="{{Storage::url('/DSC03184 1.png')}}" alt="">
-                    </div>
-                    <div class="col-md-5 services-card">
-                        <h2>PAVILION</h2>
-                        <p>The pavilion is the perfect spot to eat your deliciously prepared food. Take pleasure at the al fresco dining by the beachfront while enjoying the beautiful ocean views. </p>
-
-                        <img src="{{Storage::url('/cutlery 1.png')}}" alt="">
-                    </div>
-
-                </div>
-
-                <div class="row swiper-slide services-card-row">
-                    <div class="col-md-5 service-image">
-                        <img src="{{Storage::url('/DSC03184 1.png')}}" alt="">
-                    </div>
-                    <div class="col-md-5 services-card">
-                        <h2>PAVILION</h2>
-                        <p>The pavilion is the perfect spot to eat your deliciously prepared food. Take pleasure at the al fresco dining by the beachfront while enjoying the beautiful ocean views. </p>
-
-                        <img src="{{Storage::url('/cutlery 1.png')}}" alt="">
-                    </div>
-
-                </div>
 
 
             </div>
