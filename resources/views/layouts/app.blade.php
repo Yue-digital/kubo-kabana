@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  @livewireStyles
+
 
     <!-- Custom CSS -->
 
@@ -46,6 +48,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     
     @yield('additional-js')
+    @livewireScripts
+
 <script async
 src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1_oxw3virUdjwJPaVyuKnSZr4Zplq4SE&libraries=places&callback=initMap">
 </script>
