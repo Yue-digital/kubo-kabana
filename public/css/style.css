@@ -6,6 +6,16 @@
     --transition-duration: 0.5s;
     --hover-opacity: 0.8;
     --font-family: 'Poppins', sans-serif;
+    
+    /* Font Sizes */
+    --font-size-xs: 14px;
+    --font-size-sm: 16px;
+    --font-size-base: 18px;
+    --font-size-lg: 24px;
+    --font-size-xl: 30px;
+    --font-size-2xl: 36px;
+    --font-size-3xl: 40px;
+    --font-size-4xl: 43px;
 }
 
 /* Import Poppins font */
@@ -31,7 +41,7 @@ body {
   background-color: var(--secondary-color);
   text-transform: uppercase;
   font-weight: bolder;
-  font-size: 18px;
+  font-size: var(--font-size-base);
 }
 
 body .navbar-brand{
@@ -131,11 +141,11 @@ img.full-logo{
                 text-align: center;
                 color: var(--secondary-color);
                 font-weight: bolder;
-                font-size: 43px;
+                font-size: var(--font-size-4xl);
             }
             p{
                 color: var(--secondary-color);
-                font-size: 18px;
+                font-size: var(--font-size-base);
                 margin-top: 25px;
             }
 
@@ -232,7 +242,7 @@ img.full-logo{
     label{
       font-weight: bolder;
       color: var(--secondary-color);
-      font-size: 18px;
+      font-size: var(--font-size-base);
     }
 
     .card{
@@ -252,7 +262,7 @@ img.full-logo{
       background-color: var(--secondary-color);
       text-transform: uppercase;
       font-weight: bolder;
-      font-size: 18px;
+      font-size: var(--font-size-base);
     }
   }
   .contact-features-container{
@@ -304,12 +314,12 @@ img.full-logo{
     padding: 25px 100px;
     a,li{
       color: var(--primary-color);
-      font-size: 18px;
+      font-size: var(--font-size-base);
     }
 
     h5{
       font-weight: bolder;
-      font-size: 30px;
+      font-size: var(--font-size-xl);
       text-decoration: underline;
     }
     .kubo-footer-logo{
@@ -362,7 +372,7 @@ img.full-logo{
 }
 
 .route-info-item span {
-    font-size: 14px;
+    font-size: var(--font-size-xs);
     color: #333;
 }
 
@@ -395,7 +405,7 @@ img.full-logo{
 
     label{
       color: var(--secondary-color);
-      font-size: 18px;
+      font-size: var(--font-size-base);
       input:focus{
         color: var(--secondary-color);
       }
@@ -403,7 +413,7 @@ img.full-logo{
 
     h4{
         color: var(--secondary-color);
-        font-size: 18px;
+        font-size: var(--font-size-base);
         font-weight: bolder;
     }
 
@@ -444,7 +454,7 @@ img.full-logo{
 }
 
 .kubo-badge{
-  font-size: 18px;
+  font-size: var(--font-size-base);
   color: var(--secondary-color);
   border: 2px solid var(--secondary-color);
   border-radius: 30px;
@@ -464,12 +474,12 @@ img.full-logo{
   h2{
     color: var(--secondary-color);
     font-weight: bolder;
-    font-size: 40px;
+    font-size: var(--font-size-3xl);
     font-weight: bolder;
   }
   p{
     color: var(--secondary-color);
-    font-size: 18px;
+    font-size: var(--font-size-base);
     margin-top: 25px;
     padding: 0 35px;
     font-weight: 400;
@@ -556,18 +566,18 @@ img.full-logo{
     }
 
     .text-guest{
-      font-size: 36px;
+      font-size: var(--font-size-2xl);
       color: var(--secondary-color);
     }
 
     p{
-      font-size: 18px;
+      font-size: var(--font-size-base);
       color: var(--secondary-color);
     }
     h2{
       color: var(--secondary-color);
       font-weight: bolder;
-      font-size: 40px;
+      font-size: var(--font-size-3xl);
     }
   }
 
@@ -637,7 +647,7 @@ img.full-logo{
   h1{
     color: var(--primary-color);
     font-weight: bolder;
-    font-size: 40px;
+    font-size: var(--font-size-3xl);
     text-align: center;
     text-transform: uppercase;
     margin-bottom: 50px;
@@ -659,7 +669,7 @@ img.full-logo{
   }
 
   .gallery-button{
-    font-size: 36px;
+    font-size: var(--font-size-2xl);
     font-weight: bolder;
     color: var(--primary-color);
     text-transform: uppercase;
@@ -677,14 +687,14 @@ img.full-logo{
   h1{
     color: #023047;
     font-weight: bolder;
-    font-size: 40px;
+    font-size: var(--font-size-3xl);
     text-align: center;
     text-transform: uppercase;
   }
 
   p{
     color: #023047;
-    font-size: 18px;
+    font-size: var(--font-size-base);
     text-align: center;
     margin-bottom: 50px;
     width: 50%;
@@ -738,14 +748,14 @@ img.full-logo{
       h2{
         color: #023047;
         font-weight: bolder;
-        font-size: 40px;
+        font-size: var(--font-size-3xl);
         text-align: center;
         text-transform: uppercase;
       }
 
       p{
         color: #023047;
-        font-size: 18px;
+        font-size: var(--font-size-base);
         text-align: left;
         width: 80%;
       }
@@ -755,5 +765,120 @@ img.full-logo{
         object-fit: cover;
       }
     }
+  }
+}
+
+@media (max-width: 1440px) {
+  .contact-features {
+      padding: 100px 50px;
+  }
+}
+
+@media (max-width: 1024px) {
+
+}
+
+@media (max-width: 992px) {
+  body .navbar-brand{
+    margin-top: 0;
+  }
+  body .navbar-collapse{
+    background: #FFFFFF;
+  }
+
+  .navbar .nav-link{
+    color: #141414 !important;
+  }
+
+  .navbar{
+    background: #219EBC !important;
+  }
+  .navbar-nav {
+      margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-features {
+      padding: 100px 20px;
+      
+      .feature-col{
+        margin-top: 30px;
+      }
+  }
+  .services-container {
+      .services-card {
+          h2 {
+              font-size: var(--font-size-xl);
+          }
+      }
+  }
+}
+@media (max-width: 767px) {
+  .service-image{
+    margin-bottom: 30px;
+    max-height: 50%;
+    img{
+    }
+  }
+  .services-card{
+    padding: 30px;
+  }
+
+  .room-details-container {
+        .room-image-col{
+          padding-left: 0;
+        }
+      .main-image-container {
+          height: 500px;
+          border-radius:0;
+      }
+  }
+
+  .room-details-container {
+      & .room-info-col {
+          padding-right: 0;
+          .card {
+              border-radius: 0px;
+          }
+      }
+  }
+}
+
+@media (max-width: 576px) {
+  .room-details-container {
+      .text-guest {
+          font-size: var(--font-size-lg);
+      }
+      h2 {
+          font-size: var(--font-size-xl);
+      }
+  }
+  
+  .services-container {
+      h1 {
+          font-size: var(--font-size-xl);
+      }
+      .services-card {
+          h2 {
+              font-size: var(--font-size-lg);
+          }
+          p {
+              font-size: var(--font-size-sm);
+          }
+      }
+  }
+  
+  .gallery-container {
+      h1 {
+          font-size: var(--font-size-xl);
+      }
+      .gallery-button {
+          font-size: var(--font-size-lg);
+      }
+  }
+
+  .kubo-footer {
+      padding: 25px 20px;
   }
 }

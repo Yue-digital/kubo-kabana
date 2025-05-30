@@ -12,8 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
-        $schedule->command('bookings:remove-pending')->daily();
+        $schedule->command('bookings:remove-pending')
+            ->everyMinute()
+            ->appendOutputTo(storage_path('logs/scheduler.log'));
     }
 
     /**

@@ -151,7 +151,7 @@
 
     <script>
        const swiper = new Swiper(".swiper", {
-            slidesPerView: 2,
+            slidesPerView: 1,
             spaceBetween: 30,
             centeredSlides: true,
             loop: true,
@@ -168,6 +168,20 @@
                 modifier: 1,
                 slideShadows: false,
             },
+            breakpoints: {
+                // when window width is >= 640px
+                640: {
+                    slidesPerView: 1,
+                },
+                // when window width is >= 768px
+                768: {
+                    slidesPerView: 2,
+                },
+                // when window width is >= 1024px
+                1024: {
+                    slidesPerView: 2,
+                }
+            }
         });
     </script>
 </body>
