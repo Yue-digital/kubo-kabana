@@ -776,6 +776,11 @@ img.full-logo{
 
 @media (max-width: 1024px) {
 
+  .room-details-container {
+      .image-row {
+          height: unset;
+      }
+  }
 }
 
 @media (max-width: 992px) {
@@ -815,6 +820,43 @@ img.full-logo{
   }
 }
 @media (max-width: 767px) {
+
+  .room-details-container {
+      .image-row {
+          height: auto;
+      }
+  }
+
+  .check-availability-container {
+    margin-top: -168px;
+    z-index: 1000;
+  }
+
+  .contact-features-container {
+      margin-top: -103px;
+  }
+
+  .contact-features {
+      .contact {
+        flex-direction: column;
+        row-gap: 13px;
+      }
+  }
+
+  .kubo-footer {
+    padding: 100px 50px !important;
+      a, li {
+          word-wrap: break-word;
+          word-break: break-all;
+      }
+  }
+
+  .map-col {
+      #search-box {
+          width: 80%;
+      }
+  }
+
   .service-image{
     margin-bottom: 30px;
     max-height: 50%;
