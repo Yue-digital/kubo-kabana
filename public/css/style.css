@@ -889,11 +889,15 @@ img.full-logo{
 
 @media (max-width: 576px) {
   .room-details-container {
+    padding: 0 15px 25px !important;
       .text-guest {
           font-size: var(--font-size-lg);
       }
       h2 {
           font-size: var(--font-size-xl);
+      }
+      .image-row {
+        padding: 0 15px !important;
       }
   }
   
@@ -922,5 +926,14 @@ img.full-logo{
 
   .kubo-footer {
       padding: 25px 20px;
+  }
+}
+
+@media (max-width: 320px) {
+  .room-details-container {
+      .room-images-gallery {
+          flex-wrap: wrap;
+          padding-left: 15px;
+      }
   }
 }
