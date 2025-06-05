@@ -159,6 +159,14 @@ img.full-logo{
             }
         }
     }
+
+    .feature-about-col{
+      .btn-kubo{
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+
 }
 
 .swiper-container{

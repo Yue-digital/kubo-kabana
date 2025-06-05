@@ -29,6 +29,11 @@ class AboutResource extends Resource
                 Forms\Components\RichEditor::make('description')
                     ->label('Description')
                     ->required(),
+                Forms\Components\FileUpload::make('policy_file')
+                    ->label('PDF File')
+                    ->acceptedFileTypes(['application/pdf'])
+                    ->directory('pdfs')
+                    ->preserveFilenames(),
             ]);
     }
 
@@ -36,7 +41,6 @@ class AboutResource extends Resource
     {
         return $table
             ->columns([
-                //
                 Tables\Columns\TextColumn::make('About')
                     ->state('About Page')
             ])

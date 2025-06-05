@@ -31,8 +31,9 @@ class HomeController extends Controller
 
         $mapUrl = $this->generateGoogleStaticMap($lat, $lng);
         $home = Home::with('galleryImages')->first();
+        $about = \App\Models\About::first();
 
-        return view('pages.about', compact('featuredRooms', 'mapUrl','home'));
+        return view('pages.about', compact('featuredRooms', 'mapUrl', 'home', 'about'));
     }
 
     private function generateGoogleStaticMap($lat, $lng, $zoom = 18, $width = 1700, $height = 900)
