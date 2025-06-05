@@ -468,35 +468,85 @@ document.addEventListener('DOMContentLoaded', function() {
         this.disabled = true;
         discountMessage.innerHTML = '<span class="text-info">Validating discount code...</span>';
 
+        // Get the base price and additional costs
+        const basePrice = {{ $rooms->lean_weekday_price ?? 0 }};
+        const duration = Math.ceil((new Date(document.getElementById('check_out').value) - new Date(document.getElementById('check_in').value)) / (1000 * 60 * 60 * 24));
+        const totalBasePrice = basePrice * duration;
+        
+        // Calculate additional costs
+        const additionalAdults = parseInt(addAdultInput.value) || 0;
+        const children = parseInt(addChildInput.value) || 0;
+        const pets = parseInt(petInput.value) || 0;
+        const costPerAdult = {{ $rooms->cost_adult ?? 0 }};
+        const costPerChild = {{ $rooms->cost_child ?? 0 }};
+        const costPerPet = {{ $rooms->cost_pet ?? 0 }};
+        
+        const additionalAdultsCost = additionalAdults * costPerAdult * duration;
+        const childrenCost = children * costPerChild * duration;
+        const petsCost = pets * costPerPet * duration;
+        const additionalCosts = additionalAdultsCost + childrenCost + petsCost;
+
         fetch('{{ route("validate.discount") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: JSON.stringify({ code, amount: Number(amount) })
+            body: JSON.stringify({ code, amount: Number(totalBasePrice) }) // Only send base price for discount
         })
         .then(response => response.json())
         .then(data => {
             if (data.valid) {
                 discountMessage.innerHTML = '<span class="text-success">Discount applied successfully!</span>';
 
+                // Calculate final amount by adding discounted base price and additional costs
+                const discountedBasePrice = data.final_amount;
+                const finalAmount = discountedBasePrice + additionalCosts;
+                const discountAmount = totalBasePrice - discountedBasePrice;
+
                 // Update the form with new amounts
-                document.getElementById('total_amount_input').value = data.final_amount;
-                document.getElementById('discount_amount_input').value = data.discount_amount;
+                document.getElementById('total_amount_input').value = finalAmount;
+                document.getElementById('discount_amount_input').value = discountAmount;
 
                 // Update the displayed prices
                 const priceContainer = document.querySelector('.text-kubo');
-                const originalPrice = Number(amount);
-                const discountAmount = data.discount_amount;
-                const finalAmount = data.final_amount;
-
+                
                 // Create or update price display
                 priceContainer.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>Original Price:</span>
-                        <span class="text-decoration-line-through">₱${originalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        <span>Base Price (${duration} nights):</span>
+                        <span class="text-decoration-line-through">₱${totalBasePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Discounted Base Price:</span>
+                        <span>₱${discountedBasePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>`;
+
+                if (additionalAdultsCost > 0) {
+                    priceContainer.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Additional Adults (${additionalAdults} × ₱${costPerAdult}/night):</span>
+                            <span>₱${additionalAdultsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>`;
+                }
+
+                if (childrenCost > 0) {
+                    priceContainer.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Children (${children} × ₱${costPerChild}/night):</span>
+                            <span>₱${childrenCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>`;
+                }
+
+                if (petsCost > 0) {
+                    priceContainer.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Pets (${pets} × ₱${costPerPet}/night):</span>
+                            <span>₱${petsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>`;
+                }
+
+                priceContainer.innerHTML += `
                     <div class="d-flex justify-content-between align-items-center">
                         <span>Discount:</span>
                         <span class="text-success">-₱${discountAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>

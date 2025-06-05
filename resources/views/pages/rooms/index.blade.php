@@ -128,9 +128,9 @@
         <div class="col-md-5 room-info-col">
             <div class="card d-flex shadow-sm">
                 <h2 class="fw-bold mb-1">{{ $room->name }}</h2>
-                <div class="mb-2 text-guest ">
+                {{-- <div class="mb-2 text-guest ">
                     <i class="fa fa-users"></i> {{ $room->min_guest }} - {{ $room->max_guest }} guests
-                </div>
+                </div> --}}
                 <p class="mb-3">
                     {{ $room->description }}
                 </p>
@@ -181,14 +181,14 @@
         <div class="text-start mt-4" style="color: #7B5A3A;">
           @if(isset($room) && $room->is_peak_season)
             <strong>Weekday rate (Monday – Friday)</strong><br>
-            Php {{ number_format($room->peak_weekday_price) }} per kubo
+            Php {{ number_format($room->peak_weekday_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
               <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
               <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
             <strong>Weekend rate (Saturday & Sunday)</strong><br>
-            Php {{ number_format($room->peak_weekend_price) }} per kubo
+            Php {{ number_format($room->peak_weekend_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
               <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
@@ -196,14 +196,14 @@
             </ul>
           @else
             <strong>Weekday rate (Monday – Friday)</strong><br>
-            Php {{ number_format($room->lean_weekday_price) }} per kubo
+            Php {{ number_format($room->lean_weekday_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
               <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
               <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
             <strong>Weekend rate (Saturday & Sunday)</strong><br>
-            Php {{ number_format($room->lean_weekend_price) }} per kubo
+            Php {{ number_format($room->lean_weekend_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
               <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
