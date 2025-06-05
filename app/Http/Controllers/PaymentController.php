@@ -319,6 +319,21 @@ class PaymentController extends Controller
 
     public function handle(Request $request)
     {
+        // Verify Paymongo signature
+        $signature = $request->header('Paymongo-Signature');
+        if (!$signature) {
+            Log::error('PayMongo Webhook: Missing signature');
+            return response()->json(['error' => 'Missing signature'], 400);
+        }
+
+        $payload = $request->getContent();
+        $computedSignature = hash_hmac('sha256', $payload, env('PAYMONGO_WEBHOOK_SECRET'));
+        
+        if (!hash_equals($signature, $computedSignature)) {
+            Log::error('PayMongo Webhook: Invalid signature');
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
+
         $payload = $request->all();
 
         // Log the raw payload for debugging
@@ -335,9 +350,22 @@ class PaymentController extends Controller
             if ($bookingId) {
                 $booking = Booking::find($bookingId);
                 if ($booking && $booking->status !== 'paid') {
-                    $booking->status = 'paid';
-                    $booking->save();
+                    try {
+                        $booking->status = 'paid';
+                        $booking->save();
+                        Log::info('Booking status updated to paid', ['booking_id' => $bookingId]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to update booking status', [
+                            'booking_id' => $bookingId,
+                            'error' => $e->getMessage()
+                        ]);
+                        return response()->json(['error' => 'Failed to update booking status'], 500);
+                    }
+                } else {
+                    Log::warning('Booking not found or already paid', ['booking_id' => $bookingId]);
                 }
+            } else {
+                Log::warning('No booking_id found in webhook metadata');
             }
         }
 

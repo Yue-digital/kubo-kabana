@@ -149,25 +149,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calculate total additional people (adults + children)
         const totalAdditional = additionalAdults + children;
 
-        // Check if total additional people exceeds 5
-        if (totalAdditional > 5) {
-            alert('Additional guests limit: 5 people maximum (adults and children combined).\nCurrent additional guests: ' + totalAdditional);
-            // Reset the last changed input to maintain the total under 5
+        // Check if total additional people exceeds 10 (5 adults + 5 children)
+        if (totalAdditional > 10) {
+            alert('Additional guests limit: 10 people maximum (5 adults and 5 children combined).\nCurrent additional guests: ' + totalAdditional);
+            // Reset the last changed input to maintain the total under 10
             const lastChanged = document.activeElement;
             if (lastChanged && (lastChanged.id === 'add_adult' || lastChanged.id === 'add_child')) {
-                lastChanged.value = Math.max(0, 5 - (totalAdditional - parseInt(lastChanged.value)));
+                lastChanged.value = Math.max(0, 10 - (totalAdditional - parseInt(lastChanged.value)));
             }
         }
 
         // Calculate total including pets
         const total = baseGuests + totalAdditional + pets;
 
-        if (total > 25) {
-            alert('Total capacity limit: 25 people maximum.\n\nCurrent breakdown:\n- Base guests: ' + baseGuests + '\n- Additional guests: ' + totalAdditional + '\n- Pets: ' + pets + '\n\nTotal: ' + total);
-            // Reset the last changed input to maintain the total under 25
+        if (total > 30) {
+            alert('Total capacity limit: 30 people maximum.\n\nCurrent breakdown:\n- Base guests: ' + baseGuests + '\n- Additional guests: ' + totalAdditional + '\n- Pets: ' + pets + '\n\nTotal: ' + total);
+            // Reset the last changed input to maintain the total under 30
             const lastChanged = document.activeElement;
             if (lastChanged) {
-                lastChanged.value = Math.max(0, 25 - (total - parseInt(lastChanged.value)));
+                lastChanged.value = Math.max(0, 30 - (total - parseInt(lastChanged.value)));
             }
         }
 
@@ -183,14 +183,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const totalAdditional = additionalAdults + children;
 
             if (this.id === 'add_adult') {
-                if (totalAdditional + parseInt(e.key) > 5) {
+                if (additionalAdults + parseInt(e.key) > 5) {
                     e.preventDefault();
-                    alert('Additional guests limit: 5 people maximum (adults and children combined).\nCurrent additional guests: ' + totalAdditional);
+                    alert('Additional adults limit: 5 maximum.\nCurrent additional adults: ' + additionalAdults);
                 }
             } else if (this.id === 'add_child') {
-                if (totalAdditional + parseInt(e.key) > 5) {
+                if (children + parseInt(e.key) > 5) {
                     e.preventDefault();
-                    alert('Additional guests limit: 5 people maximum (adults and children combined).\nCurrent additional guests: ' + totalAdditional);
+                    alert('Children limit: 5 maximum.\nCurrent children: ' + children);
                 }
             }
         });
@@ -200,9 +200,9 @@ document.addEventListener('DOMContentLoaded', function() {
     petInput.addEventListener('input', calculateTotalGuests);
     petInput.addEventListener('keypress', function(e) {
         const value = parseInt(this.value + e.key);
-        if (value > 5) {
+        if (value > 3) {
             e.preventDefault();
-            alert('Pets limit: 5 maximum.\nCurrent pets: ' + this.value);
+            alert('Pets limit: 3 maximum.\nCurrent pets: ' + this.value);
         }
     });
 
