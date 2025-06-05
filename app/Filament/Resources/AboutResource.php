@@ -31,7 +31,7 @@ class AboutResource extends Resource
                     ->required(),
                 Forms\Components\FileUpload::make('policy_file')
                     ->label('PDF File')
-                    ->acceptedFileTypes(['application/pdf'])
+                    ->acceptedFileTypes(['application/pdf', 'application/x-pdf', 'application/octet-stream', '.pdf'])
                     ->directory('pdfs')
                     ->preserveFilenames(),
             ]);
