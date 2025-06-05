@@ -10,5 +10,6 @@ class About extends Model
 
     protected $fillable = [
         'description',
+        'policy_file',
     ];
 }
