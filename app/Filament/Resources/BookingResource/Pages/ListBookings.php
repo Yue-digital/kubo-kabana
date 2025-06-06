@@ -82,7 +82,7 @@ class ListBookings extends ListRecords
                                         'line_items' => [
                                             [
                                                 'currency' => 'PHP',
-                                                'amount' => $record->total,
+                                                'amount' => (int) ($record->total * 100),
                                                 'name' => 'Kubo Kabana',
                                                 'quantity' => 1,
                                             ]
