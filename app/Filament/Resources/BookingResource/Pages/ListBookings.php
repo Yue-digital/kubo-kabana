@@ -78,12 +78,12 @@ class ListBookings extends ListRecords
                                         'send_email_receipt' => true,
                                         'show_description' => true,
                                         'show_line_items' => true,
-                                        'description' => 'Purchase of Test Product',
+                                        'description' => 'Book Reservation',
                                         'line_items' => [
                                             [
                                                 'currency' => 'PHP',
-                                                'amount' => 50000,
-                                                'name' => 'Test Product',
+                                                'amount' => $record->total,
+                                                'name' => 'Kubo Kabana',
                                                 'quantity' => 1,
                                             ]
                                         ],
