@@ -20,6 +20,32 @@
         background: #ffebee;
         color: #d32f2f;
     }
+    .policy-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid #dee2e6;
+    }
+    .policy-section h3 {
+        color: #333;
+        margin-bottom: 15px;
+    }
+    .policy-section ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    .policy-section li {
+        margin-bottom: 10px;
+        padding-left: 20px;
+        position: relative;
+    }
+    .policy-section li:before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #666;
+    }
 </style>
 @endsection
 
@@ -113,9 +139,29 @@
                                     <span class="btn btn-kubo btn-kubo-alternate-second">₱{{ number_format($rooms->total_price ?? 0, 2) }}</span>
                                 </div>
                             </h4>
+
+                            
                             <input type="hidden" name="total_amount" id="total_amount_input" value="{{ $rooms->total_price ?? 0 }}">
                             <input type="hidden" name="original_amount" id="original_amount_input" value="{{ $rooms->original_price ?? $rooms->total_price ?? 0 }}">
                             <input type="hidden" name="discount_amount" id="discount_amount_input" value="{{ $rooms->discount_amount ?? 0 }}">
+                        </div>
+                    </div>
+
+                    <!-- Booking Policy Section -->
+                    <div class="policy-section">
+                        <h3>Booking Policy</h3>
+                        <div class="mb-3">
+                            <strong>Non-Refundable</strong>
+                        </div>
+                        <div>
+                            <strong>Rebooking Policy:</strong>
+                            <ul>
+                                <li>First 3 Months from Original Booking Date: Free of Charge (One Time Only)</li>
+                                <li>Within 6 Months from Original Booking Date: Rebooking Fee of 25% of Total Night Rate</li>
+                                <li>Within 9 Months from Original Booking Date: Rebooking Fee of 30% of Total Night Rate</li>
+                                <li>Within 12 Months from Original Booking Date: Rebooking Fee of 35% of Total Night Rate</li>
+                                <li>More than 1 Year from Original Booking Date: Not Allowed</li>
+                            </ul>
                         </div>
                     </div>
 
