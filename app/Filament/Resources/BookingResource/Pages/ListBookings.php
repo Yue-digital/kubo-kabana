@@ -7,7 +7,6 @@ use Filament\Actions\CreateAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables;
@@ -15,10 +14,22 @@ use Filament\Tables\Actions\Action;
 use App\Mail\BookingApprovedMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
-
+use Filament\Resources\Pages\Concerns\InteractsWithFormActions;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Components\View;
+use Carbon\Carbon;
+use App\Filament\Widgets\BookingCalendar;
 
 class ListBookings extends ListRecords
 {
+    use InteractsWithForms;
+
     protected static string $resource = BookingResource::class;
 
     protected function getHeaderActions(): array
@@ -27,6 +38,7 @@ class ListBookings extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
 
     public function table(Tables\Table $table): Tables\Table
     {
@@ -57,7 +69,7 @@ class ListBookings extends ListRecords
                     ->icon('heroicon-m-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => $record->status !== 'approved') // only show if not approved
+                    ->visible(fn ($record) => $record->status !== 'approved')
                     ->action(function ($record) {
                         $response = Http::withBasicAuth(env('PAYMONGO_SECRET_KEY'), '')
                             ->post('https://api.paymongo.com/v1/checkout_sessions', [
@@ -70,7 +82,7 @@ class ListBookings extends ListRecords
                                         'line_items' => [
                                             [
                                                 'currency' => 'PHP',
-                                                'amount' => 50000, // 500.00 PHP
+                                                'amount' => 50000,
                                                 'name' => 'Test Product',
                                                 'quantity' => 1,
                                             ]
@@ -88,20 +100,16 @@ class ListBookings extends ListRecords
 
                         if ($response->successful()) {
                             $checkoutUrl = $response->json()['data']['attributes']['checkout_url'];
-                        }else{
+                        } else {
                             $error = $response->json();
                             logger()->error('PayMongo Checkout Error', $error);
                             return view('pages.payment.error', ['error' => json_encode($error)]);
-                            // return back()->with('error', 'Payment processing failed. Please try again.');
                         }
                         $record->update(['status' => 'approved']);
 
                         $record->checkout_url = $checkoutUrl;
                         Mail::to($record->email)->send(new BookingApprovedMail($record, $checkoutUrl));
-
                     }),
             ]);
     }
-
-    
 }

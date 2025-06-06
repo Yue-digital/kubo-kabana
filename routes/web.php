@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\BookingEventController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about-us', [HomeController::class, 'about'])->name('about');
@@ -25,7 +26,7 @@ Route::get('/payment/failure', [PaymentController::class, 'failure'])->name('pay
 Route::post('validate-discount', [PaymentController::class, 'validateDiscount'])->name('validate.discount');
 
 Route::post('/rooms/airbnb-dates', [RoomController::class, 'getAirbnbDates'])->name('rooms.airbnb-dates');
-
+Route::get('/bookings/events', [BookingEventController::class, 'index']);
 Route::get('/check', function () {
     return [
         'url' => url('/'),

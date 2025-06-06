@@ -8,7 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use App\Models\Booking;
 
 class CreateBooking extends CreateRecord
 {
@@ -18,9 +20,9 @@ class CreateBooking extends CreateRecord
     {
         return $form
             ->schema([
-                TextInput::make('name')
+                TextInput::make('full_name')
                     ->required()
-                    ->label('Booking Name'),
+                    ->label('Full Name'),
                 TextInput::make('email')
                     ->required()
                     ->email()
@@ -29,12 +31,59 @@ class CreateBooking extends CreateRecord
                     ->required()
                     ->tel()
                     ->label('Phone Number'),
-                DatePicker::make('check_in')
+                DateTimePicker::make('check_in')
                     ->required()
-                    ->label('Check-in Date'),
-                DatePicker::make('check_out')
+                    ->label('Check-in Date')
+                    ->minDate(now()->addDays(1))
+                    ->displayFormat('d/m/Y')
+                    ->native(false)
+                    ->firstDayOfWeek(1)
+                    ->disabledDates(function () {
+                        $bookedDates = [];
+                        $bookings = Booking::query()
+                            ->where('check_out', '>=', now())
+                            ->get(['check_in', 'check_out']);
+
+                        foreach ($bookings as $booking) {
+                            $currentDate = $booking->check_in->copy();
+                            while ($currentDate <= $booking->check_out) {
+                                $bookedDates[] = $currentDate->format('Y-m-d');
+                                $currentDate->addDay();
+                            }
+                        }
+
+                        return array_unique($bookedDates);
+                    }),
+                DateTimePicker::make('check_out')
                     ->required()
-                    ->label('Check-out Date'),
+                    ->label('Check-out Date')
+                    ->minDate(fn ($get) => $get('check_in') ? \Carbon\Carbon::parse($get('check_in'))->addDay() : now()->addDays(2))
+                    ->displayFormat('d/m/Y')
+                    ->native(false)
+                    ->firstDayOfWeek(1)
+                    ->disabledDates(function () {
+                        $bookedDates = [];
+                        $bookings = Booking::query()
+                            ->where('check_out', '>=', now())
+                            ->get(['check_in', 'check_out']);
+
+                        foreach ($bookings as $booking) {
+                            $currentDate = $booking->check_in->copy();
+                            while ($currentDate <= $booking->check_out) {
+                                $bookedDates[] = $currentDate->format('Y-m-d');
+                                $currentDate->addDay();
+                            }
+                        }
+
+                        return array_unique($bookedDates);
+                    }),
+                Select::make('status')
+                    ->required()
+                    ->label('Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                    ])
             ]);
     }
 }

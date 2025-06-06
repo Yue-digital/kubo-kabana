@@ -44,6 +44,7 @@ class BookingResource extends Resource
                 Forms\Components\DatePicker::make('check_out')
                     ->label('Check-out Date')
                     ->required()
+                    ->minDate(fn ($get) => $get('check_in'))
                     ->disabled(fn ($livewire) => $livewire instanceof ViewBooking),
                 Forms\Components\Select::make('status')
                     ->label('Booking Status')
