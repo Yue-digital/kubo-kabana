@@ -205,19 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Calculate total including pets
-        const total = baseGuests + totalAdditional + pets;
-
-        if (total > 30) {
-            alert('Total capacity limit: 30 people maximum.\n\nCurrent breakdown:\n- Base guests: ' + baseGuests + '\n- Additional guests: ' + totalAdditional + '\n- Pets: ' + pets + '\n\nTotal: ' + total);
-            // Reset the last changed input to maintain the total under 30
-            const lastChanged = document.activeElement;
-            if (lastChanged) {
-                lastChanged.value = Math.max(0, 30 - (total - parseInt(lastChanged.value)));
-            }
-        }
-
-        return total;
+        return baseGuests + totalAdditional + pets;
     }
 
     // Add event listeners for additional adults and children
