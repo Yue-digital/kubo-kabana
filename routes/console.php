@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('inspire')->everyMinute();
-Schedule::command('app:remove-pending')->everyMinute();
+Schedule::command('app:remove-pending')->dailyAt('00:00');
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
