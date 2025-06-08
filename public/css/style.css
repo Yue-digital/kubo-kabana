@@ -107,6 +107,7 @@ img.full-logo{
         flex-wrap: wrap;
         align-items: center;
         justify-self: center;
+        margin: auto
     }
     .contact{
         display: flex;
@@ -147,6 +148,7 @@ img.full-logo{
                 color: var(--secondary-color);
                 font-size: var(--font-size-base);
                 margin-top: 25px;
+                text-align: justify;
             }
 
             .btn-kubo{

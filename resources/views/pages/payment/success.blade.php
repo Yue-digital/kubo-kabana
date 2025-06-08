@@ -6,7 +6,6 @@
 <div class="col-md-5"></div>
 <div class="col-md-6 payment-col">
 
-
             <div class="reservation-cont reservation-cont-success ">
                 <h2>RESERVATION</h2>
 

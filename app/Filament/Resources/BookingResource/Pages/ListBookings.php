@@ -88,7 +88,13 @@ class ListBookings extends ListRecords
                                             ]
                                         ],
                                         'payment_method_types' => ['gcash', 'card', 'paymaya','brankas_bdo','brankas_landbank','brankas_metrobank'],
-                                        'success_url' => route('payment.success'),
+                                        'success_url' => route('payment.success', [
+                                            'data' => encrypt([
+                                                'booking_id' => $record->id,
+                                                'booking_reference' => $record->booking_reference,
+                                                'status' => 'success'
+                                            ])
+                                        ]),
                                         'cancel_url' => route('payment.failure'),
                                         'metadata' => [
                                             'booking_id' => $record->id,

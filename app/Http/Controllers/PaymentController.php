@@ -179,6 +179,7 @@ class PaymentController extends Controller
             'additional_adults' => $request->input('add_adult', 0),
             'additional_children' => $request->input('add_child', 0),
             'additional_pets' => $request->input('pet', 0),
+            'booking_reference' => 'BK' . strtoupper(substr(uniqid(), -6)),
             'status' => 'pending',
         ]);
 
@@ -307,9 +308,27 @@ class PaymentController extends Controller
         }
     }
 
-    public function success()
+    public function success(Request $request)
     {
-        return view('pages.payment.success');
+        $data = $request->query('data');
+        $data = decrypt($data);
+
+        $booking = Booking::find($data['booking_id']);
+
+        if($booking['booking_reference'] == $data['booking_reference'] && $booking->status != 'paid') {
+            $booking->status = 'paid';
+            $booking->updated_at = now();
+            $booking->save();
+
+            // Send confirmation email
+            try {
+                Mail::to($booking->email)->send(new \App\Mail\BookingReservationConfirmation($booking));
+            } catch (\Exception $e) {
+                Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+            }
+        }
+
+        return view('pages.payment.success', compact('data'));
     }
 
     public function failure()
