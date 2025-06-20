@@ -22,7 +22,7 @@
                         <a class="nav-link {{ request()->is('about-us') ? 'active' : '' }}" href="{{ url('about-us') }}#about-section">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('services') ? 'active' : '' }}" href="{{ url('/services') }}">Services</a>
+                        <a class="nav-link {{ request()->is('services') ? 'active' : '' }}" href="{{ url('/services') }}">Amenities</a>
                     </li>
                 </ul>
 

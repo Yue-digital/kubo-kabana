@@ -311,20 +311,23 @@ class PaymentController extends Controller
     public function success(Request $request)
     {
         $data = $request->query('data');
-        $data = decrypt($data);
 
-        $booking = Booking::find($data['booking_id']);
+        if ($data) {
+            $data = decrypt($data);
 
-        if($booking['booking_reference'] == $data['booking_reference'] && $booking->status != 'paid') {
-            $booking->status = 'paid';
-            $booking->updated_at = now();
-            $booking->save();
+            $booking = Booking::find($data['booking_id']);
 
-            // Send confirmation email
-            try {
-                Mail::to($booking->email)->send(new \App\Mail\BookingReservationConfirmation($booking));
-            } catch (\Exception $e) {
-                Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+            if($booking['booking_reference'] == $data['booking_reference'] && $booking->status != 'paid') {
+                $booking->status = 'paid';
+                $booking->updated_at = now();
+                $booking->save();
+
+                // Send confirmation email
+                try {
+                    Mail::to($booking->email)->send(new \App\Mail\BookingReservationConfirmation($booking));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+                }
             }
         }
 
@@ -347,7 +350,7 @@ class PaymentController extends Controller
 
         $payload = $request->getContent();
         $computedSignature = hash_hmac('sha256', $payload, env('PAYMONGO_WEBHOOK_SECRET'));
-        
+
         if (!hash_equals($signature, $computedSignature)) {
             Log::error('PayMongo Webhook: Invalid signature');
             return response()->json(['error' => 'Invalid signature'], 400);

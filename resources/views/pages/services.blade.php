@@ -51,7 +51,7 @@
 <div class="container-fluid services-container">
     <div class="row m-0">
         <div class="col-md-12 services-content">
-            <h1>Services</h1>
+            <h1>Amenities</h1>
 
             <p>To ensure guest's relaxation and enjoyment, Kubo Kabana offers services that can make their stay quite memorable. Below are the services that the resort caters to its guests.</p>
         </div>
