@@ -883,6 +883,7 @@ img.full-logo{
   }
   .services-card{
     padding: 30px;
+    height: unset !important;
   }
 
   .room-details-container {
