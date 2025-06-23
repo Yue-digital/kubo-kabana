@@ -46,7 +46,7 @@ class CreateBooking extends CreateRecord
 
                         foreach ($bookings as $booking) {
                             $currentDate = $booking->check_in->copy();
-                            while ($currentDate <= $booking->check_out) {
+                            while ($currentDate->lt($booking->check_out)) {
                                 $bookedDates[] = $currentDate->format('Y-m-d');
                                 $currentDate->addDay();
                             }
@@ -69,7 +69,7 @@ class CreateBooking extends CreateRecord
 
                         foreach ($bookings as $booking) {
                             $currentDate = $booking->check_in->copy();
-                            while ($currentDate <= $booking->check_out) {
+                            while ($currentDate->lt($booking->check_out)) {
                                 $bookedDates[] = $currentDate->format('Y-m-d');
                                 $currentDate->addDay();
                             }

@@ -91,9 +91,12 @@ class RoomController extends Controller
             $start = Carbon::parse($booking->check_in);
             $end = Carbon::parse($booking->check_out);
             
-            // Add all dates in the range to bookedDates
-            for ($date = $start; $date->lte($end); $date->addDay()) {
-                $bookedDates[] = $date->format('Y-m-d');
+            // Add all dates in the range to bookedDates, but exclude the checkout date
+            // Guests check out in the morning, so the checkout date should be available for new bookings
+            $currentDate = $start->copy();
+            while ($currentDate->lt($end)) { // Use lt() instead of lte() to exclude checkout date
+                $bookedDates[] = $currentDate->format('Y-m-d');
+                $currentDate->addDay();
             }
         }
 

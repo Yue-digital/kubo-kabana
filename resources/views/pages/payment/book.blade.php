@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let currentDate = new Date(checkIn);
                 let hasBookedDates = false;
 
-                while (currentDate <= checkOut) {
+                while (currentDate < checkOut) {
                     const dateStr = currentDate.toISOString().split('T')[0];
                     if (bookedDates.includes(dateStr)) {
                         hasBookedDates = true;

@@ -937,6 +937,13 @@ img.full-logo{
   .kubo-footer {
       padding: 25px 20px;
   }
+
+  .room-details-container {
+    .room-images-gallery {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+  }
 }
 
 @media (max-width: 320px) {

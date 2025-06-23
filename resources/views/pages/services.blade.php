@@ -18,6 +18,31 @@
         }
         .services-swiper {
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .services-swiper .swiper-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        
+        .services-swiper .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @media (max-width: 767px) {
+            .services-swiper {
+                padding: 0 20px;
+            }
+            
+            .services-swiper .swiper-slide {
+                width: 100% !important;
+                margin: 0 auto;
+            }
         }
     </style>
 @endsection
@@ -29,6 +54,8 @@
             new Swiper('.services-swiper', {
                 slidesPerView: 1,
                 spaceBetween: 30,
+                centeredSlides: true,
+                loop: false,
                 navigation: {
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',
@@ -38,8 +65,14 @@
                     clickable: true,
                 },
                 breakpoints: {
-                    768: { slidesPerView: 1 },
-                    1024: { slidesPerView: 1 }
+                    768: { 
+                        slidesPerView: 1,
+                        centeredSlides: true
+                    },
+                    1024: { 
+                        slidesPerView: 1,
+                        centeredSlides: true
+                    }
                 }
             });
         });

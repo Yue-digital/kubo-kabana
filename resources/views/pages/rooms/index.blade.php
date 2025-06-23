@@ -41,31 +41,60 @@
     .button-container {
         position: relative;
     }
+    .date-picker-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none;
+    }
+    .date-picker-backdrop.show {
+        display: block;
+    }
+    body.date-picker-open {
+        overflow: hidden;
+    }
     .date-picker-container {
-        position: absolute;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         display: none;
         background: white;
-        padding: 15px;
+        padding: 20px;
         border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         z-index: 1000;
-        width: 100%;
+        width: 90%;
         max-width: 400px;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 100%;
-        margin-bottom: 10px;
+        margin: 0;
+        border: 1px solid #e0e0e0;
+        animation: fadeInScale 0.3s ease-out;
     }
     .date-picker-container.show {
         display: block;
     }
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    }
     .date-picker-container input {
         width: 100%;
-        padding: 10px;
+        padding: 12px 15px;
         border: 2px solid var(--secondary-color);
         border-radius: 30px;
         color: var(--secondary-color);
         font-family: var(--font-family);
+        font-size: 16px;
     }
     .date-picker-container input:focus {
         outline: none;
@@ -81,6 +110,27 @@
         border-right: 10px solid transparent;
         border-top: 10px solid white;
     }
+    .btn-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+    .btn-close:hover {
+        background-color: #f0f0f0;
+        color: #333;
+    }
     /* Blocked dates styles */
     .flatpickr-day.blocked {
         background-color: #ffebee;
@@ -90,6 +140,18 @@
     }
     .flatpickr-day.blocked:hover {
         background-color: #ffebee;
+    }
+    /* Responsive design for mobile */
+    @media (max-width: 768px) {
+        .date-picker-container {
+            width: 95%;
+            max-width: 350px;
+            padding: 15px;
+        }
+        .date-picker-container input {
+            font-size: 14px;
+            padding: 10px 12px;
+        }
     }
 </style>
 @endsection
@@ -143,7 +205,9 @@
                 </div>
                 <div class="d-grid mt-auto gap-2 mb-2">
                     <div class="button-container  text-center">
+                        <div class="date-picker-backdrop" id="datePickerBackdrop"></div>
                         <div class="date-picker-container" id="datePickerContainer">
+                            <button type="button" class="btn-close" id="closeDatePicker">&times;</button>
                             <input type="text" id="dateRange" class="form-control" placeholder="Select dates" readonly>
                         </div>
                         <button class="btn btn-kubo-alternate" id="checkDatesBtn">Check Available Dates</button>
@@ -233,6 +297,7 @@
 
         // Date Picker Implementation
         const datePickerContainer = document.getElementById('datePickerContainer');
+        const datePickerBackdrop = document.getElementById('datePickerBackdrop');
         const checkDatesBtn = document.getElementById('checkDatesBtn');
         const dateRangeInput = document.getElementById('dateRange');
         const originalButtonText = checkDatesBtn.textContent;
@@ -314,10 +379,18 @@
                         const endDate = selectedDates[1];
 
                         // Check if selection overlaps with booked dates
-                        const hasOverlap = bookedDates.some(date => {
-                            const bookedDate = new Date(date);
-                            return bookedDate >= startDate && bookedDate <= endDate;
-                        });
+                        // We need to check each date in the range against booked dates
+                        let hasOverlap = false;
+                        let currentDate = new Date(startDate);
+                        
+                        while (currentDate <= endDate) {
+                            const dateStr = currentDate.toISOString().split('T')[0];
+                            if (bookedDates.includes(dateStr)) {
+                                hasOverlap = true;
+                                break;
+                            }
+                            currentDate.setDate(currentDate.getDate() + 1);
+                        }
 
                         if (hasOverlap) {
                             instance.clear();
@@ -326,7 +399,6 @@
                                 const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
                                 bookNowBtn.setAttribute('href', baseUrl);
                             }
-                            alert('Selected dates overlap with booked dates. Please choose different dates.');
 
                             const newUrl = window.location.pathname;
                             window.history.pushState({}, '', newUrl);
@@ -341,6 +413,8 @@
                         window.history.pushState({}, '', newUrl);
 
                         datePickerContainer.classList.remove('show');
+                        datePickerBackdrop.classList.remove('show');
+                        document.body.classList.remove('date-picker-open');
                     } else if (selectedDates.length === 0) {
                         checkDatesBtn.textContent = originalButtonText;
                         if (bookNowBtn) {
@@ -357,12 +431,30 @@
             // Toggle date picker container
             checkDatesBtn.addEventListener('click', function() {
                 datePickerContainer.classList.toggle('show');
+                datePickerBackdrop.classList.toggle('show');
+                document.body.classList.toggle('date-picker-open');
+            });
+
+            // Close date picker when clicking on backdrop
+            datePickerBackdrop.addEventListener('click', function() {
+                datePickerContainer.classList.remove('show');
+                datePickerBackdrop.classList.remove('show');
+                document.body.classList.remove('date-picker-open');
+            });
+
+            // Close date picker when clicking close button
+            document.getElementById('closeDatePicker').addEventListener('click', function() {
+                datePickerContainer.classList.remove('show');
+                datePickerBackdrop.classList.remove('show');
+                document.body.classList.remove('date-picker-open');
             });
 
             // Close date picker when clicking outside
             document.addEventListener('click', function(event) {
-                if (!datePickerContainer.contains(event.target) && !checkDatesBtn.contains(event.target)) {
+                if (!datePickerContainer.contains(event.target) && !checkDatesBtn.contains(event.target) && !datePickerBackdrop.contains(event.target)) {
                     datePickerContainer.classList.remove('show');
+                    datePickerBackdrop.classList.remove('show');
+                    document.body.classList.remove('date-picker-open');
                 }
             });
         }
@@ -379,10 +471,19 @@
                 if (checkIn && checkOut) {
                     const startDate = new Date(checkIn);
                     const endDate = new Date(checkOut);
-                    const hasOverlap = bookedDates.some(date => {
-                        const bookedDate = new Date(date);
-                        return bookedDate >= startDate && bookedDate <= endDate;
-                    });
+                    
+                    // Check each date in the range against booked dates
+                    let hasOverlap = false;
+                    let currentDate = new Date(startDate);
+                    
+                    while (currentDate <= endDate) {
+                        const dateStr = currentDate.toISOString().split('T')[0];
+                        if (bookedDates.includes(dateStr)) {
+                            hasOverlap = true;
+                            break;
+                        }
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
 
                     if (hasOverlap) {
                         // Reset the selection if there's an overlap
