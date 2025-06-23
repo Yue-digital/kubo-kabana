@@ -745,6 +745,13 @@ img.full-logo{
       display: flex;
       padding: 20px 0;
     }
+
+    .service-image{
+      img{
+        max-height: 900px;
+        object-fit: cover;
+      }
+    }
     .services-card, .service-image img{
       border-radius: 30px;
     }
@@ -754,6 +761,7 @@ img.full-logo{
       align-items: center;
       justify-content: center;
       box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.1);
+      height: 100%;
 
       h2{
         color: #023047;

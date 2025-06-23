@@ -41,96 +41,6 @@
     .button-container {
         position: relative;
     }
-    .date-picker-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-        display: none;
-    }
-    .date-picker-backdrop.show {
-        display: block;
-    }
-    body.date-picker-open {
-        overflow: hidden;
-    }
-    .date-picker-container {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        display: none;
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        width: 90%;
-        max-width: 400px;
-        margin: 0;
-        border: 1px solid #e0e0e0;
-        animation: fadeInScale 0.3s ease-out;
-    }
-    .date-picker-container.show {
-        display: block;
-    }
-    @keyframes fadeInScale {
-        from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-    }
-    .date-picker-container input {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid var(--secondary-color);
-        border-radius: 30px;
-        color: var(--secondary-color);
-        font-family: var(--font-family);
-        font-size: 16px;
-    }
-    .date-picker-container input:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(136, 100, 85, 0.2);
-    }
-    .date-picker-container::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-top: 10px solid white;
-    }
-    .btn-close {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: #666;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.2s ease;
-    }
-    .btn-close:hover {
-        background-color: #f0f0f0;
-        color: #333;
-    }
     /* Blocked dates styles */
     .flatpickr-day.blocked {
         background-color: #ffebee;
@@ -140,6 +50,65 @@
     }
     .flatpickr-day.blocked:hover {
         background-color: #ffebee;
+    }
+    /* Center Flatpickr calendar */
+    .flatpickr-calendar {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 9999 !important;
+        width: 400px !important;
+        font-size: 16px !important;
+    }
+    
+    
+    .flatpickr-calendar .flatpickr-month {
+        height: 60px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-current-month {
+        font-size: 18px !important;
+        padding: 15px 0 !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-weekdays {
+        height: 50px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-weekday {
+        font-size: 16px !important;
+        padding: 15px 0 !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-days {
+        padding: 10px !important;
+        width: 100% !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-day {
+        height: 45px !important;
+        line-height: 45px !important;
+        font-size: 16px !important;
+        margin: 2px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-day.selected {
+        background: #886455 !important;
+        border-color: #886455 !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-day.inRange {
+        background: rgba(136, 100, 85, 0.2) !important;
+        border-color: rgba(136, 100, 85, 0.2) !important;
+    }
+
+    .dayContainer{
+        max-width: 100%;
+        width: 100%;
+    }
+    .flatpickr-rContainer{
+        width: 100%;
     }
     /* Responsive design for mobile */
     @media (max-width: 768px) {
@@ -151,6 +120,10 @@
         .date-picker-container input {
             font-size: 14px;
             padding: 10px 12px;
+        }
+        .flatpickr-calendar {
+            width: 90% !important;
+            max-width: 350px !important;
         }
     }
 </style>
@@ -205,11 +178,7 @@
                 </div>
                 <div class="d-grid mt-auto gap-2 mb-2">
                     <div class="button-container  text-center">
-                        <div class="date-picker-backdrop" id="datePickerBackdrop"></div>
-                        <div class="date-picker-container" id="datePickerContainer">
-                            <button type="button" class="btn-close" id="closeDatePicker">&times;</button>
-                            <input type="text" id="dateRange" class="form-control" placeholder="Select dates" readonly>
-                        </div>
+                        <input type="text" id="dateRange" class="form-control" placeholder="Select dates" readonly style="display: none;">
                         <button class="btn btn-kubo-alternate" id="checkDatesBtn">Check Available Dates</button>
                     </div>
                 </div>
@@ -296,8 +265,6 @@
         });
 
         // Date Picker Implementation
-        const datePickerContainer = document.getElementById('datePickerContainer');
-        const datePickerBackdrop = document.getElementById('datePickerBackdrop');
         const checkDatesBtn = document.getElementById('checkDatesBtn');
         const dateRangeInput = document.getElementById('dateRange');
         const originalButtonText = checkDatesBtn.textContent;
@@ -360,6 +327,8 @@
                 theme: "material_blue",
                 defaultDate: defaultDates,
                 disable: bookedDates,
+                inline: false,
+                appendTo: document.body,
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
                     // Add visual indicator for blocked dates
                     if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
@@ -412,9 +381,8 @@
                             `?check_in=${formatDateToYYYYMMDD(startDate)}&check_out=${formatDateToYYYYMMDD(endDate)}`;
                         window.history.pushState({}, '', newUrl);
 
-                        datePickerContainer.classList.remove('show');
-                        datePickerBackdrop.classList.remove('show');
-                        document.body.classList.remove('date-picker-open');
+                        // Close the calendar after selection
+                        instance.close();
                     } else if (selectedDates.length === 0) {
                         checkDatesBtn.textContent = originalButtonText;
                         if (bookNowBtn) {
@@ -430,32 +398,8 @@
 
             // Toggle date picker container
             checkDatesBtn.addEventListener('click', function() {
-                datePickerContainer.classList.toggle('show');
-                datePickerBackdrop.classList.toggle('show');
-                document.body.classList.toggle('date-picker-open');
-            });
-
-            // Close date picker when clicking on backdrop
-            datePickerBackdrop.addEventListener('click', function() {
-                datePickerContainer.classList.remove('show');
-                datePickerBackdrop.classList.remove('show');
-                document.body.classList.remove('date-picker-open');
-            });
-
-            // Close date picker when clicking close button
-            document.getElementById('closeDatePicker').addEventListener('click', function() {
-                datePickerContainer.classList.remove('show');
-                datePickerBackdrop.classList.remove('show');
-                document.body.classList.remove('date-picker-open');
-            });
-
-            // Close date picker when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!datePickerContainer.contains(event.target) && !checkDatesBtn.contains(event.target) && !datePickerBackdrop.contains(event.target)) {
-                    datePickerContainer.classList.remove('show');
-                    datePickerBackdrop.classList.remove('show');
-                    document.body.classList.remove('date-picker-open');
-                }
+                // Open Flatpickr calendar directly
+                fp.open();
             });
         }
 
