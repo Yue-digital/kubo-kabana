@@ -15,7 +15,7 @@
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="{{ route('home') }}" class=" text-decoration-none">Home</a></li>
                     <li class="mb-2"><a href="{{ route('kubo-room') }}" class=" text-decoration-none">Rooms</a></li>
-                    <li class="mb-2"><a href="{{ route('services') }}" class=" text-decoration-none">Services</a></li>
+                    <li class="mb-2"><a href="{{ route('services') }}" class=" text-decoration-none">Amenities</a></li>
                     <li class="mb-2"><a href="{{ route('gallery') }}" class=" text-decoration-none">Gallery</a></li>
                     <li class="mb-2"><a href="{{ url('about-us') }}" class=" text-decoration-none">About Us</a></li>
                 </ul>

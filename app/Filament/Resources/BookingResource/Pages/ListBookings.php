@@ -69,7 +69,7 @@ class ListBookings extends ListRecords
                     ->icon('heroicon-m-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => $record->status !== 'approved')
+                    ->visible(fn ($record) => $record->status !== 'approved' && $record->status !== 'paid')
                     ->action(function ($record) {
                         $response = Http::withBasicAuth(env('PAYMONGO_SECRET_KEY'), '')
                             ->post('https://api.paymongo.com/v1/checkout_sessions', [
@@ -115,6 +115,15 @@ class ListBookings extends ListRecords
 
                         $record->checkout_url = $checkoutUrl;
                         Mail::to($record->email)->send(new BookingApprovedMail($record, $checkoutUrl));
+                    }),
+                Action::make('delete')
+                    ->label('Delete')
+                    ->icon('heroicon-m-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => $record->status === 'paid')
+                    ->action(function ($record) {
+                        $record->delete();
                     }),
             ]);
     }

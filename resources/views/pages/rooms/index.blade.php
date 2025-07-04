@@ -177,9 +177,15 @@
                     @endforeach
                 </div>
                 <div class="d-grid mt-auto gap-2 mb-2">
-                    <div class="button-container  text-center">
-                        <input type="text" id="dateRange" class="form-control" placeholder="Select dates" readonly style="display: none;">
-                        <button class="btn btn-kubo-alternate" id="checkDatesBtn">Check Available Dates</button>
+                    <div class="button-container text-center">
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="text" id="checkInDate" class="form-control" placeholder="Check-in date" readonly style="cursor: pointer;">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" id="checkOutDate" class="form-control" placeholder="Check-out date" readonly style="cursor: pointer;">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
@@ -265,9 +271,8 @@
         });
 
         // Date Picker Implementation
-        const checkDatesBtn = document.getElementById('checkDatesBtn');
-        const dateRangeInput = document.getElementById('dateRange');
-        const originalButtonText = checkDatesBtn.textContent;
+        const checkInDateInput = document.getElementById('checkInDate');
+        const checkOutDateInput = document.getElementById('checkOutDate');
         const bookNowBtn = document.querySelector('.book-now-btn');
 
         // Get URL parameters
@@ -301,151 +306,218 @@
             }
         }
 
-        // Initialize Flatpickr
-        let fp = null;
+        // Validate date range
+        function validateDateRange(checkInDate, checkOutDate) {
+            if (!checkInDate || !checkOutDate) {
+                return false;
+            }
 
-        function initializeDatePicker() {
-            // Clear any existing instance
-            if (fp) {
-                fp.destroy();
+            // Check if check-in date is a valid checkout date (end of a booking period)
+            const checkInDateStr = checkInDate.toISOString().split('T')[0];
+            let checkInDateIsValid = true;
+            
+            if (bookedDates.includes(checkInDateStr)) {
+                // Check if check-in date is the end of a booking period (checkout date)
+                const previousDay = new Date(checkInDate);
+                previousDay.setDate(previousDay.getDate() - 1);
+                const previousDayStr = previousDay.toISOString().split('T')[0];
+                
+                // If the previous day is also booked, then check-in date is part of a booking period
+                // and not a valid checkout date
+                if (bookedDates.includes(previousDayStr)) {
+                    checkInDateIsValid = false;
+                }
+            }
+
+            if (!checkInDateIsValid) {
+                return false;
+            }
+
+            // Check if any date in the range (excluding checkout date) is booked
+            let hasBookedDatesInRange = false;
+            let currentDate = new Date(checkInDate);
+            
+            // Check each date in the range (excluding the checkout date)
+            while (currentDate < checkOutDate) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                if (bookedDates.includes(dateStr)) {
+                    hasBookedDatesInRange = true;
+                    break;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // Check if checkout date conflicts with existing bookings
+            const checkoutDateStr = checkOutDate.toISOString().split('T')[0];
+            const nextDay = new Date(checkOutDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            const nextDayStr = nextDay.toISOString().split('T')[0];
+            
+            let checkoutDateConflicts = false;
+            if (bookedDates.includes(nextDayStr)) {
+                // Check if nextDay is the start of a booking period
+                let checkDate = new Date(nextDay);
+                let consecutiveBookedDays = 0;
+                
+                // Count consecutive booked days starting from nextDay
+                while (bookedDates.includes(checkDate.toISOString().split('T')[0])) {
+                    consecutiveBookedDays++;
+                    checkDate.setDate(checkDate.getDate() + 1);
+                }
+                
+                // If nextDay is the start of a booking, then checkout date conflicts
+                // UNLESS the checkout date itself is also a check-in date (start of booking)
+                if (consecutiveBookedDays > 0) {
+                    // Check if checkout date is the start of a booking period
+                    const previousDay = new Date(checkOutDate);
+                    previousDay.setDate(previousDay.getDate() - 1);
+                    const previousDayStr = previousDay.toISOString().split('T')[0];
+                    
+                    // If previous day is NOT booked, then checkout date is a check-in date
+                    // and it's valid to check out on a check-in date
+                    if (!bookedDates.includes(previousDayStr)) {
+                        // This is a valid check-in date, so checkout is allowed
+                        checkoutDateConflicts = false;
+                    } else {
+                        // This is part of an active booking period, so checkout conflicts
+                        checkoutDateConflicts = true;
+                    }
+                }
+            }
+
+            return !hasBookedDatesInRange && !checkoutDateConflicts;
+        }
+
+        // Initialize Flatpickr instances
+        let checkInPicker = null;
+        let checkOutPicker = null;
+
+        function initializeDatePickers() {
+            // Clear any existing instances
+            if (checkInPicker) {
+                checkInPicker.destroy();
+            }
+            if (checkOutPicker) {
+                checkOutPicker.destroy();
             }
 
             // Set initial dates if they exist in URL
-            let defaultDates = [];
-            if (checkIn && checkOut) {
-                defaultDates = [checkIn, checkOut];
-                checkDatesBtn.textContent = `${formatDate(new Date(checkIn))} - ${formatDate(new Date(checkOut))}`;
-                updateBookNowButton(new Date(checkIn), new Date(checkOut));
+            if (checkIn) {
+                checkInDateInput.value = checkIn;
+            }
+            if (checkOut) {
+                checkOutDateInput.value = checkOut;
             }
 
-            // Initialize Flatpickr
-            fp = flatpickr(dateRangeInput, {
-                mode: "range",
+            // Initialize Check-in Date Picker
+            checkInPicker = flatpickr(checkInDateInput, {
+                mode: "single",
                 dateFormat: "Y-m-d",
                 minDate: "today",
                 disableMobile: "true",
                 theme: "material_blue",
-                defaultDate: defaultDates,
-                disable: bookedDates,
                 inline: false,
                 appendTo: document.body,
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    // Add visual indicator for blocked dates
+                    // For check-in dates, we can allow checkout dates (dates that are booked)
+                    // but we'll still show them as visually different
                     if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
                         dayElem.classList.add('blocked');
-                    }
-                },
-                onSelect: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length === 1) {
-                        const newUrl = window.location.pathname +
-                            `?check_in=${formatDateToYYYYMMDD(selectedDates[0])}`;
-                        window.history.pushState({}, '', newUrl);
+                        // Don't disable the date - allow it to be selected for check-in
                     }
                 },
                 onChange: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length === 2) {
-                        const startDate = selectedDates[0];
-                        const endDate = selectedDates[1];
-
-                        // Check if selection overlaps with booked dates
-                        // We need to check each date in the range against booked dates
-                        let hasOverlap = false;
-                        let currentDate = new Date(startDate);
+                    if (selectedDates.length === 1) {
+                        const checkInDate = selectedDates[0];
                         
-                        while (currentDate <= endDate) {
-                            const dateStr = currentDate.toISOString().split('T')[0];
-                            if (bookedDates.includes(dateStr)) {
-                                hasOverlap = true;
-                                break;
+                        // Update check-out picker min date
+                        if (checkOutPicker) {
+                            checkOutPicker.set('minDate', checkInDate);
+                        }
+                        
+                        // Validate if both dates are selected
+                        const checkOutDate = checkOutDateInput.value ? new Date(checkOutDateInput.value) : null;
+                        if (checkOutDate) {
+                            if (validateDateRange(checkInDate, checkOutDate)) {
+                                updateBookNowButton(checkInDate, checkOutDate);
+                                
+                                const newUrl = window.location.pathname +
+                                    `?check_in=${formatDateToYYYYMMDD(checkInDate)}&check_out=${formatDateToYYYYMMDD(checkOutDate)}`;
+                                window.history.pushState({}, '', newUrl);
+                            } else {
+                                checkOutDateInput.value = '';
+                                if (bookNowBtn) {
+                                    const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
+                                    bookNowBtn.setAttribute('href', baseUrl);
+                                }
                             }
-                            currentDate.setDate(currentDate.getDate() + 1);
                         }
-
-                        if (hasOverlap) {
-                            instance.clear();
-                            checkDatesBtn.textContent = originalButtonText;
-                            if (bookNowBtn) {
-                                const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
-                                bookNowBtn.setAttribute('href', baseUrl);
-                            }
-
-                            const newUrl = window.location.pathname;
-                            window.history.pushState({}, '', newUrl);
-                            return;
-                        }
-
-                        checkDatesBtn.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                        updateBookNowButton(startDate, endDate);
-
-                        const newUrl = window.location.pathname +
-                            `?check_in=${formatDateToYYYYMMDD(startDate)}&check_out=${formatDateToYYYYMMDD(endDate)}`;
-                        window.history.pushState({}, '', newUrl);
-
-                        // Close the calendar after selection
-                        instance.close();
-                    } else if (selectedDates.length === 0) {
-                        checkDatesBtn.textContent = originalButtonText;
-                        if (bookNowBtn) {
-                            const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
-                            bookNowBtn.setAttribute('href', baseUrl);
-                        }
-
-                        const newUrl = window.location.pathname;
-                        window.history.pushState({}, '', newUrl);
                     }
                 }
             });
 
-            // Toggle date picker container
-            checkDatesBtn.addEventListener('click', function() {
-                // Open Flatpickr calendar directly
-                fp.open();
+            // Initialize Check-out Date Picker
+            checkOutPicker = flatpickr(checkOutDateInput, {
+                mode: "single",
+                dateFormat: "Y-m-d",
+                minDate: checkIn ? new Date(checkIn) : "today",
+                disableMobile: "true",
+                theme: "material_blue",
+                inline: false,
+                appendTo: document.body,
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    // For check-out dates, we can allow check-in dates (dates that are booked)
+                    // but we'll still show them as visually different
+                    if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
+                        dayElem.classList.add('blocked');
+                        // Don't disable the date - allow it to be selected for check-out
+                    }
+                },
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 1) {
+                        const checkOutDate = selectedDates[0];
+                        const checkInDate = checkInDateInput.value ? new Date(checkInDateInput.value) : null;
+                        
+                        if (checkInDate) {
+                            if (validateDateRange(checkInDate, checkOutDate)) {
+                                updateBookNowButton(checkInDate, checkOutDate);
+                                
+                                const newUrl = window.location.pathname +
+                                    `?check_in=${formatDateToYYYYMMDD(checkInDate)}&check_out=${formatDateToYYYYMMDD(checkOutDate)}`;
+                                window.history.pushState({}, '', newUrl);
+                            } else {
+                                instance.clear();
+                                if (bookNowBtn) {
+                                    const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
+                                    bookNowBtn.setAttribute('href', baseUrl);
+                                }
+                            }
+                        }
+                    }
+                }
             });
+
+            // Update Book Now button if both dates are set
+            if (checkIn && checkOut) {
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                if (validateDateRange(checkInDate, checkOutDate)) {
+                    updateBookNowButton(checkInDate, checkOutDate);
+                }
+            }
         }
 
-        // Fetch booked dates and initialize date picker
+        // Fetch booked dates and initialize date pickers
         let bookedDates = [];
         fetch('/rooms/booked-dates')
             .then(response => response.json())
             .then(dates => {
                 bookedDates = dates;
-                initializeDatePicker();
-
-                // Check if current selection overlaps with booked dates
-                if (checkIn && checkOut) {
-                    const startDate = new Date(checkIn);
-                    const endDate = new Date(checkOut);
-                    
-                    // Check each date in the range against booked dates
-                    let hasOverlap = false;
-                    let currentDate = new Date(startDate);
-                    
-                    while (currentDate <= endDate) {
-                        const dateStr = currentDate.toISOString().split('T')[0];
-                        if (bookedDates.includes(dateStr)) {
-                            hasOverlap = true;
-                            break;
-                        }
-                        currentDate.setDate(currentDate.getDate() + 1);
-                    }
-
-                    if (hasOverlap) {
-                        // Reset the selection if there's an overlap
-                        checkDatesBtn.textContent = originalButtonText;
-                        if (bookNowBtn) {
-                            const baseUrl = bookNowBtn.getAttribute('href').split('?')[0];
-                            bookNowBtn.setAttribute('href', baseUrl);
-                        }
-
-                        // Remove date parameters from URL
-                        const newUrl = window.location.pathname;
-                        window.history.pushState({}, '', newUrl);
-                    }
-                }
+                initializeDatePickers();
             })
             .catch(error => {
                 console.error('Error fetching booked dates:', error);
-                initializeDatePicker();
+                initializeDatePickers();
             });
     });
 </script>

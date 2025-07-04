@@ -77,35 +77,35 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="check_in" class="form-label">Check-in Date</label>
-                            <input type="date" class="form-control" id="check_in" name="check_in" value="{{ $checkIn ?? '' }}" required>
+                            <input type="text" class="form-control" id="check_in" name="check_in" value="{{ $checkIn ?? '' }}" placeholder="Select check-in date" readonly style="cursor: pointer;" required>
                         </div>
                         <div class="col-md-6">
                             <label for="check_out" class="form-label">Check-out Date</label>
-                            <input type="date" class="form-control" id="check_out" name="check_out" value="{{ $checkOut ?? '' }}" required>
+                            <input type="text" class="form-control" id="check_out" name="check_out" value="{{ $checkOut ?? '' }}" placeholder="Select check-out date" readonly style="cursor: pointer;" required>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="num_guests" class="form-label">Number of Guests</label>
-                            <input type="number" max="20" placeholder="Max of 20 guests" class="form-control" id="num_guests" name="num_guests" required>
+                            <input type="number" min="0" max="20" placeholder="Max of 20 guests" class="form-control" id="num_guests" name="num_guests" required>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="add_adult" class="form-label">Additional</label>
-                            <input type="number" placeholder="Adults" class="form-control" id="add_adult" name="add_adult" required>
+                            <input type="number" min="0" placeholder="Adults" class="form-control" id="add_adult" name="add_adult" required>
                         </div>
 
                         <div class="col-md-6 d-flex flex-column">
                             <label for="add_child" class="form-label"> </label>
-                            <input type="number" placeholder="Child" class="form-control mt-auto" id="add_child" name="add_child" required>
+                            <input type="number" min="0" placeholder="Child" class="form-control mt-auto" id="add_child" name="add_child" required>
                         </div>
 
                         <div class="col-md-6">
                             <label for="pet" class="form-label"> </label>
-                            <input type="number" placeholder="Pets" class="form-control" id="pet" name="pet" required>
+                            <input type="number" min="0" placeholder="Pets" class="form-control" id="pet" name="pet" required>
                         </div>
                     </div>
 
@@ -210,7 +210,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listeners for additional adults and children
     [addAdultInput, addChildInput].forEach(input => {
-        input.addEventListener('input', calculateTotalGuests);
+        input.addEventListener('input', function() {
+            // Prevent negative numbers
+            if (parseInt(this.value) < 0) {
+                this.value = 0;
+            }
+            calculateTotalGuests();
+        });
         input.addEventListener('keypress', function(e) {
             const additionalAdults = parseInt(addAdultInput.value) || 0;
             const children = parseInt(addChildInput.value) || 0;
@@ -231,7 +237,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Special handling for pets
-    petInput.addEventListener('input', calculateTotalGuests);
+    petInput.addEventListener('input', function() {
+        // Prevent negative numbers
+        if (parseInt(this.value) < 0) {
+            this.value = 0;
+        }
+        calculateTotalGuests();
+    });
     petInput.addEventListener('keypress', function(e) {
         const value = parseInt(this.value + e.key);
         if (value > 3) {
@@ -243,7 +255,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Special handling for base guests with max of 20
     numGuestsInput.addEventListener('input', function() {
         const value = parseInt(this.value);
-        if (value > 20) {
+        // Prevent negative numbers
+        if (value < 0) {
+            this.value = 0;
+        } else if (value > 20) {
             this.value = 20;
             alert('Base guests limit: 20 people maximum.\nCurrent base guests: ' + value);
         }
@@ -258,232 +273,299 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fetch booked dates
+    // Fetch booked dates and initialize date pickers
+    let bookedDates = [];
     fetch('/rooms/booked-dates')
         .then(response => response.json())
-        .then(bookedDates => {
-            const checkInInput = document.getElementById('check_in');
-            const checkOutInput = document.getElementById('check_out');
-
-            // Set min date to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
-
-            // Initialize Flatpickr for check-in
-            const checkInPicker = flatpickr(checkInInput, {
-                minDate: tomorrowFormatted,
-                dateFormat: "Y-m-d",
-                disable: bookedDates,
-                onChange: function(selectedDates, dateStr) {
-                    if (selectedDates.length > 0) {
-                        // Update check-out min date to the selected check-in date
-                        checkOutPicker.set('minDate', selectedDates[0]);
-
-                        // If check-out date is before check-in date, update it
-                        if (checkOutPicker.selectedDates[0] && checkOutPicker.selectedDates[0] < selectedDates[0]) {
-                            checkOutPicker.setDate(selectedDates[0]);
-                        }
-
-                        // Calculate and validate the date range
-                        validateDateRange(selectedDates[0], checkOutPicker.selectedDates[0]);
-                    }
-                },
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    // Add visual indicator for blocked dates
-                    if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
-                        dayElem.classList.add('blocked');
-                    }
-                }
-            });
-
-            // Initialize Flatpickr for check-out
-            const checkOutPicker = flatpickr(checkOutInput, {
-                minDate: tomorrowFormatted,
-                dateFormat: "Y-m-d",
-                disable: bookedDates,
-                onChange: function(selectedDates, dateStr) {
-                    if (selectedDates.length > 0) {
-                        const checkInDate = new Date(checkInInput.value);
-                        const checkOutDate = selectedDates[0];
-
-                        // Ensure check-out date is not before check-in date
-                        if (checkOutDate < checkInDate) {
-                            checkOutPicker.setDate(checkInDate);
-                            return;
-                        }
-
-                        // Calculate and validate the date range
-                        validateDateRange(checkInDate, checkOutDate);
-                    }
-                },
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    // Add visual indicator for blocked dates
-                    if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
-                        dayElem.classList.add('blocked');
-                    }
-                }
-            });
-
-            // Function to validate date range and calculate duration
-            function validateDateRange(checkIn, checkOut) {
-                if (!checkIn || !checkOut) return;
-
-                // Calculate duration in days
-                const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-
-                // Check if any date in the range is booked
-                let currentDate = new Date(checkIn);
-                let hasBookedDates = false;
-
-                while (currentDate < checkOut) {
-                    const dateStr = currentDate.toISOString().split('T')[0];
-                    if (bookedDates.includes(dateStr)) {
-                        hasBookedDates = true;
-                        break;
-                    }
-                    currentDate.setDate(currentDate.getDate() + 1);
-                }
-
-                if (hasBookedDates) {
-                    // Find next available date
-                    let nextDate = new Date(checkOut);
-                    nextDate.setDate(nextDate.getDate() + 1);
-                    while (bookedDates.includes(nextDate.toISOString().split('T')[0])) {
-                        nextDate.setDate(nextDate.getDate() + 1);
-                    }
-                    checkOutPicker.setDate(nextDate);
-                    alert('Selected date range includes booked dates. End date has been adjusted.');
-                    return;
-                }
-
-                // Validate minimum stay (if needed)
-                if (duration < 1) {
-                    alert('Check-out date must be after check-in date');
-                    checkOutPicker.setDate(new Date(checkIn.getTime() + 24 * 60 * 60 * 1000));
-                    return;
-                }
-
-                // Validate maximum stay (if needed)
-                const MAX_STAY_DAYS = 30; // Adjust this value as needed
-                if (duration > MAX_STAY_DAYS) {
-                    alert(`Maximum stay duration is ${MAX_STAY_DAYS} days`);
-                    const maxDate = new Date(checkIn);
-                    maxDate.setDate(maxDate.getDate() + MAX_STAY_DAYS);
-                    checkOutPicker.setDate(maxDate);
-                    return;
-                }
-
-                // If all validations pass, you can trigger any additional calculations here
-                // For example, calculating the total price based on duration
-                calculateTotalPrice(duration);
-            }
-
-            // Function to calculate total price based on duration
-            function calculateTotalPrice(duration) {
-                // Get the base price and costs from the room data
-                const basePrice = {{ $rooms->lean_weekday_price ?? 0 }}; // Use the base room price
-                const costPerAdult = {{ $rooms->cost_adult ?? 0 }};
-                const costPerChild = {{ $rooms->cost_child ?? 0 }};
-                const costPerPet = {{ $rooms->cost_pet ?? 0 }};
-
-                // Get the number of additional guests
-                const additionalAdults = parseInt(addAdultInput.value) || 0;
-                const children = parseInt(addChildInput.value) || 0;
-                const pets = parseInt(petInput.value) || 0;
-
-                // Calculate base price for the entire stay
-                const totalBasePrice = basePrice * duration;
-
-                // Calculate additional costs per night
-                const additionalAdultsCost = additionalAdults * costPerAdult * duration;
-                const childrenCost = children * costPerChild * duration;
-                const petsCost = pets * costPerPet * duration;
-
-                // Calculate total price
-                const totalPrice = totalBasePrice + additionalAdultsCost + childrenCost + petsCost;
-
-                // Update the price display
-                const priceContainer = document.querySelector('.text-kubo');
-                if (priceContainer) {
-                    let priceHtml = `
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>Base Price (${duration} nights):</span>
-                            <span>₱${totalBasePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                        </div>`;
-
-                    if (additionalAdultsCost > 0) {
-                        priceHtml += `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Additional Adults (${additionalAdults} × ₱${costPerAdult}/night):</span>
-                                <span>₱${additionalAdultsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                            </div>`;
-                    }
-
-                    if (childrenCost > 0) {
-                        priceHtml += `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Children (${children} × ₱${costPerChild}/night):</span>
-                                <span>₱${childrenCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                            </div>`;
-                    }
-
-                    if (petsCost > 0) {
-                        priceHtml += `
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Pets (${pets} × ₱${costPerPet}/night):</span>
-                                <span>₱${petsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                            </div>`;
-                    }
-
-                    priceHtml += `
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>Total Amount:</span>
-                            <span class="btn btn-kubo btn-kubo-alternate-second">₱${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                        </div>`;
-
-                    priceContainer.innerHTML = priceHtml;
-                }
-
-                // Update hidden input fields
-                document.getElementById('total_amount_input').value = totalPrice;
-                document.getElementById('original_amount_input').value = totalPrice;
-            }
-
-            // Add event listeners for price calculation
-            [addAdultInput, addChildInput, petInput].forEach(input => {
-                input.addEventListener('input', function() {
-                    const checkIn = document.getElementById('check_in').value;
-                    const checkOut = document.getElementById('check_out').value;
-                    if (checkIn && checkOut) {
-                        const checkInDate = new Date(checkIn);
-                        const checkOutDate = new Date(checkOut);
-                        const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-                        calculateTotalPrice(duration);
-                    }
-                });
-            });
-
-            // Also calculate price when dates change
-            [checkInInput, checkOutInput].forEach(input => {
-                input.addEventListener('change', function() {
-                    if (checkInInput.value && checkOutInput.value) {
-                        const checkInDate = new Date(checkInInput.value);
-                        const checkOutDate = new Date(checkOutInput.value);
-                        const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-                        calculateTotalPrice(duration);
-                    }
-                });
-            });
-
-            // Set initial min date for check-out based on check-in value if it exists
-            if (checkInInput.value) {
-                checkOutPicker.set('minDate', checkInInput.value);
-            }
+        .then(dates => {
+            bookedDates = dates;
+            initializeDatePickers();
         })
         .catch(error => {
             console.error('Error fetching booked dates:', error);
+            initializeDatePickers();
         });
+
+    // Format date to YYYY-MM-DD without timezone issues
+    function formatDateToYYYYMMDD(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Validate date range
+    function validateDateRange(checkInDate, checkOutDate) {
+        if (!checkInDate || !checkOutDate) {
+            return false;
+        }
+
+        // Check if check-in date is a valid checkout date (end of a booking period)
+        const checkInDateStr = checkInDate.toISOString().split('T')[0];
+        let checkInDateIsValid = true;
+        
+        if (bookedDates.includes(checkInDateStr)) {
+            // Check if check-in date is the end of a booking period (checkout date)
+            const previousDay = new Date(checkInDate);
+            previousDay.setDate(previousDay.getDate() - 1);
+            const previousDayStr = previousDay.toISOString().split('T')[0];
+            
+            // If the previous day is also booked, then check-in date is part of a booking period
+            // and not a valid checkout date
+            if (bookedDates.includes(previousDayStr)) {
+                checkInDateIsValid = false;
+            }
+        }
+
+        if (!checkInDateIsValid) {
+            return false;
+        }
+
+        // Check if any date in the range (excluding checkout date) is booked
+        let hasBookedDatesInRange = false;
+        let currentDate = new Date(checkInDate);
+        
+        // Check each date in the range (excluding the checkout date)
+        while (currentDate < checkOutDate) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            if (bookedDates.includes(dateStr)) {
+                hasBookedDatesInRange = true;
+                break;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Check if checkout date conflicts with existing bookings
+        const checkoutDateStr = checkOutDate.toISOString().split('T')[0];
+        const nextDay = new Date(checkOutDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const nextDayStr = nextDay.toISOString().split('T')[0];
+        
+        let checkoutDateConflicts = false;
+        if (bookedDates.includes(nextDayStr)) {
+            // Check if nextDay is the start of a booking period
+            let checkDate = new Date(nextDay);
+            let consecutiveBookedDays = 0;
+            
+            // Count consecutive booked days starting from nextDay
+            while (bookedDates.includes(checkDate.toISOString().split('T')[0])) {
+                consecutiveBookedDays++;
+                checkDate.setDate(checkDate.getDate() + 1);
+            }
+            
+            // If nextDay is the start of a booking, then checkout date conflicts
+            // UNLESS the checkout date itself is also a check-in date (start of booking)
+            if (consecutiveBookedDays > 0) {
+                // Check if checkout date is the start of a booking period
+                const previousDay = new Date(checkOutDate);
+                previousDay.setDate(previousDay.getDate() - 1);
+                const previousDayStr = previousDay.toISOString().split('T')[0];
+                
+                // If previous day is NOT booked, then checkout date is a check-in date
+                // and it's valid to check out on a check-in date
+                if (!bookedDates.includes(previousDayStr)) {
+                    // This is a valid check-in date, so checkout is allowed
+                    checkoutDateConflicts = false;
+                } else {
+                    // This is part of an active booking period, so checkout conflicts
+                    checkoutDateConflicts = true;
+                }
+            }
+        }
+
+        return !hasBookedDatesInRange && !checkoutDateConflicts;
+    }
+
+    // Initialize Flatpickr instances
+    let checkInPicker = null;
+    let checkOutPicker = null;
+
+    function initializeDatePickers() {
+        // Clear any existing instances
+        if (checkInPicker) {
+            checkInPicker.destroy();
+        }
+        if (checkOutPicker) {
+            checkOutPicker.destroy();
+        }
+
+        const checkInInput = document.getElementById('check_in');
+        const checkOutInput = document.getElementById('check_out');
+
+        // Set initial dates if they exist
+        if (checkInInput.value) {
+            checkInInput.value = checkInInput.value;
+        }
+        if (checkOutInput.value) {
+            checkOutInput.value = checkOutInput.value;
+        }
+
+        // Initialize Check-in Date Picker
+        checkInPicker = flatpickr(checkInInput, {
+            mode: "single",
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disableMobile: "true",
+            theme: "material_blue",
+            inline: false,
+            appendTo: document.body,
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                // For check-in dates, we can allow checkout dates (dates that are booked)
+                // but we'll still show them as visually different
+                if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
+                    dayElem.classList.add('blocked');
+                    // Don't disable the date - allow it to be selected for check-in
+                }
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 1) {
+                    const checkInDate = selectedDates[0];
+                    
+                    // Update check-out picker min date
+                    if (checkOutPicker) {
+                        checkOutPicker.set('minDate', checkInDate);
+                    }
+                    
+                    // Validate if both dates are selected
+                    const checkOutDate = checkOutInput.value ? new Date(checkOutInput.value) : null;
+                    if (checkOutDate) {
+                        if (validateDateRange(checkInDate, checkOutDate)) {
+                            // Calculate and update price
+                            const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                            calculateTotalPrice(duration);
+                        } else {
+                            checkOutInput.value = '';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize Check-out Date Picker
+        checkOutPicker = flatpickr(checkOutInput, {
+            mode: "single",
+            dateFormat: "Y-m-d",
+            minDate: checkInInput.value ? new Date(checkInInput.value) : "today",
+            disableMobile: "true",
+            theme: "material_blue",
+            inline: false,
+            appendTo: document.body,
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                // For check-out dates, we can allow check-in dates (dates that are booked)
+                // but we'll still show them as visually different
+                if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
+                    dayElem.classList.add('blocked');
+                    // Don't disable the date - allow it to be selected for check-out
+                }
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 1) {
+                    const checkOutDate = selectedDates[0];
+                    const checkInDate = checkInInput.value ? new Date(checkInInput.value) : null;
+                    
+                    if (checkInDate) {
+                        if (validateDateRange(checkInDate, checkOutDate)) {
+                            // Calculate and update price
+                            const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                            calculateTotalPrice(duration);
+                        } else {
+                            instance.clear();
+                        }
+                    }
+                }
+            }
+        });
+
+        // Set initial min date for check-out based on check-in value if it exists
+        if (checkInInput.value) {
+            checkOutPicker.set('minDate', checkInInput.value);
+        }
+    }
+
+    // Function to calculate total price based on duration
+    function calculateTotalPrice(duration) {
+        // Get the base price and costs from the room data
+        const basePrice = {{ $rooms->lean_weekday_price ?? 0 }}; // Use the base room price
+        const costPerAdult = {{ $rooms->cost_adult ?? 0 }};
+        const costPerChild = {{ $rooms->cost_child ?? 0 }};
+        const costPerPet = {{ $rooms->cost_pet ?? 0 }};
+
+        // Get the number of additional guests
+        const additionalAdults = parseInt(addAdultInput.value) || 0;
+        const children = parseInt(addChildInput.value) || 0;
+        const pets = parseInt(petInput.value) || 0;
+
+        // Calculate base price for the entire stay
+        const totalBasePrice = basePrice * duration;
+
+        // Calculate additional costs per night
+        const additionalAdultsCost = additionalAdults * costPerAdult * duration;
+        const childrenCost = children * costPerChild * duration;
+        const petsCost = pets * costPerPet * duration;
+
+        // Calculate total price
+        const totalPrice = totalBasePrice + additionalAdultsCost + childrenCost + petsCost;
+
+        // Update the price display
+        const priceContainer = document.querySelector('.text-kubo');
+        if (priceContainer) {
+            let priceHtml = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Base Price (${duration} nights):</span>
+                    <span>₱${totalBasePrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>`;
+
+            if (additionalAdultsCost > 0) {
+                priceHtml += `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Additional Adults (${additionalAdults} × ₱${costPerAdult}/night):</span>
+                        <span>₱${additionalAdultsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>`;
+            }
+
+            if (childrenCost > 0) {
+                priceHtml += `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Children (${children} × ₱${costPerChild}/night):</span>
+                        <span>₱${childrenCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>`;
+            }
+
+            if (petsCost > 0) {
+                priceHtml += `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Pets (${pets} × ₱${costPerPet}/night):</span>
+                        <span>₱${petsCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>`;
+            }
+
+            priceHtml += `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Total Amount:</span>
+                    <span class="btn btn-kubo btn-kubo-alternate-second">₱${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                </div>`;
+
+            priceContainer.innerHTML = priceHtml;
+        }
+
+        // Update hidden input fields
+        document.getElementById('total_amount_input').value = totalPrice;
+        document.getElementById('original_amount_input').value = totalPrice;
+    }
+
+    // Add event listeners for price calculation
+    [addAdultInput, addChildInput, petInput].forEach(input => {
+        input.addEventListener('input', function() {
+            const checkIn = document.getElementById('check_in').value;
+            const checkOut = document.getElementById('check_out').value;
+            if (checkIn && checkOut) {
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                calculateTotalPrice(duration);
+            }
+        });
+    });
 
     // Existing discount code functionality
     document.getElementById('applyDiscount').addEventListener('click', function() {

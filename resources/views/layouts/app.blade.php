@@ -23,6 +23,46 @@
 
 
     <!-- Custom CSS -->
+    <style>
+        /* Prevent image selection and dragging */
+        img {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
+        }
+        
+        /* Prevent text selection on images */
+        img::selection {
+            background: transparent;
+        }
+        
+        img::-moz-selection {
+            background: transparent;
+        }
+        
+        /* Additional protection for background images */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Allow text selection for input fields and text areas */
+        input, textarea, [contenteditable="true"] {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+    </style>
 
     @yield('additional-css')
 
@@ -51,6 +91,119 @@
     @livewireScripts
 
     <script>
+        // Image Protection Script
+        (function() {
+            // Disable right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable keyboard shortcuts for saving
+            document.addEventListener('keydown', function(e) {
+                // Prevent Ctrl+S (Save)
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Prevent Ctrl+Shift+S (Save As)
+                if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Prevent Ctrl+U (View Source)
+                if (e.ctrlKey && e.key === 'u') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Disable drag and drop for images
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Disable copy for images
+            document.addEventListener('copy', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Additional protection for images
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add protection to all existing images
+                const images = document.querySelectorAll('img');
+                images.forEach(function(img) {
+                    img.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        return false;
+                    });
+                    
+                    img.addEventListener('dragstart', function(e) {
+                        e.preventDefault();
+                        return false;
+                    });
+                    
+                    img.addEventListener('selectstart', function(e) {
+                        e.preventDefault();
+                        return false;
+                    });
+                });
+
+                // Monitor for dynamically added images
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                const newImages = node.querySelectorAll ? node.querySelectorAll('img') : [];
+                                if (node.tagName === 'IMG') {
+                                    newImages.push(node);
+                                }
+                                
+                                newImages.forEach(function(img) {
+                                    img.addEventListener('contextmenu', function(e) {
+                                        e.preventDefault();
+                                        return false;
+                                    });
+                                    
+                                    img.addEventListener('dragstart', function(e) {
+                                        e.preventDefault();
+                                        return false;
+                                    });
+                                    
+                                    img.addEventListener('selectstart', function(e) {
+                                        e.preventDefault();
+                                        return false;
+                                    });
+                                });
+                            }
+                        });
+                    });
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            });
+
+            // Disable print screen
+            document.addEventListener('keyup', function(e) {
+                if (e.key === 'PrintScreen') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+        })();
+
         let map, directionsService, directionsRenderer;
 
         function initMap() {

@@ -62,7 +62,8 @@ class RoomController extends Controller
         $currentDate = $checkInDate->copy();
         
         while ($currentDate->lte($checkOutDate)) {
-            $isWeekend = $currentDate->isWeekend();
+            // Consider Thursday (4), Friday (5), Saturday (6), and Sunday (0) as weekend
+            $isWeekend = in_array($currentDate->dayOfWeek, [4, 5, 6, 0]);
             
             if ($isPeakSeason) {
                 $price = $isWeekend ? $room->peak_weekend_price : $room->peak_weekday_price;
