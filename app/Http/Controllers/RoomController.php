@@ -88,9 +88,16 @@ class RoomController extends Controller
             ->get();
 
         $bookedDates = [];
+        $checkInDates = [];
+        $checkOutDates = [];
+        
         foreach ($bookings as $booking) {
             $start = Carbon::parse($booking->check_in);
             $end = Carbon::parse($booking->check_out);
+            
+            // Add check-in and check-out dates to separate arrays
+            $checkInDates[] = $start->format('Y-m-d');
+            $checkOutDates[] = $end->format('Y-m-d');
             
             // Add all dates in the range to bookedDates, but exclude the checkout date
             // Guests check out in the morning, so the checkout date should be available for new bookings
@@ -101,7 +108,38 @@ class RoomController extends Controller
             }
         }
 
-        return response()->json($bookedDates);
+        // Debug: Log the data for July 30-31
+        \Log::info('Booking Data Debug', [
+            'checkInDates' => $checkInDates,
+            'checkOutDates' => $checkOutDates,
+            'bookedDates' => $bookedDates,
+            'july30_checkout' => in_array('2025-07-30', $checkOutDates),
+            'july31_checkout' => in_array('2025-07-31', $checkOutDates),
+            'july30_booked' => in_array('2025-07-30', $bookedDates),
+            'july31_booked' => in_array('2025-07-31', $bookedDates),
+        ]);
+
+        // Debug: Check for specific bookings around July 30-31
+        $julyBookings = $bookings->filter(function($booking) {
+            $start = Carbon::parse($booking->check_in);
+            $end = Carbon::parse($booking->check_out);
+            return $start->month == 7 || $end->month == 7;
+        });
+        
+        \Log::info('July Bookings', [
+            'july_bookings' => $julyBookings->map(function($booking) {
+                return [
+                    'check_in' => $booking->check_in,
+                    'check_out' => $booking->check_out,
+                ];
+            })->toArray()
+        ]);
+
+        return response()->json([
+            'booked_dates' => $bookedDates,
+            'check_in_dates' => $checkInDates,
+            'check_out_dates' => $checkOutDates
+        ]);
     }
 
     public function importAirbnbCalendar(Request $request)

@@ -4,22 +4,146 @@
 <!-- Add Flatpickr CSS in the head section -->
 @section('additional-css')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
 <style>
     .flatpickr-calendar {
         background: #fff;
         border-radius: 8px;
         box-shadow: 0 3px 13px rgba(0,0,0,0.08);
     }
+    
+    /* Blocked dates styles */
     .flatpickr-day.blocked {
-        background: #ffebee;
-        color: #d32f2f;
+        background-color: #ffebee;
+        color: #c62828;
         text-decoration: line-through;
         cursor: not-allowed;
     }
     .flatpickr-day.blocked:hover {
-        background: #ffebee;
-        color: #d32f2f;
+        background-color: #ffebee;
     }
+    
+    /* Half-day blocked styles - check-in dates (lower half blocked) */
+    .flatpickr-calendar .flatpickr-day.half-day-checkin {
+        background: linear-gradient(to bottom, #fff 0%, #fff 50%, #ffebee 50%, #ffebee 100%) !important;
+        color: #c62828 !important;
+        position: relative !important;
+        cursor: pointer !important;
+    }
+    .flatpickr-calendar .flatpickr-day.half-day-checkin::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 1px !important;
+        background-color: #c62828 !important;
+        z-index: 1 !important;
+    }
+    .flatpickr-calendar .flatpickr-day.half-day-checkin:hover {
+        background: linear-gradient(to bottom, #f5f5f5 0%, #f5f5f5 50%, #ffcdd2 50%, #ffcdd2 100%) !important;
+    }
+    
+    /* Half-day blocked styles - check-out dates (upper half blocked) */
+    .flatpickr-calendar .flatpickr-day.half-day-checkout {
+        background: linear-gradient(to bottom, #ffebee 0%, #ffebee 50%, #fff 50%, #fff 100%) !important;
+        color: #c62828 !important;
+        position: relative !important;
+        cursor: pointer !important;
+    }
+    .flatpickr-calendar .flatpickr-day.half-day-checkout::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 1px !important;
+        background-color: #c62828 !important;
+        z-index: 1 !important;
+    }
+    .flatpickr-calendar .flatpickr-day.half-day-checkout:hover {
+        background: linear-gradient(to bottom, #ffcdd2 0%, #ffcdd2 50%, #f5f5f5 50%, #f5f5f5 100%) !important;
+    }
+    
+    /* Completely blocked dates - both check-in and check-out */
+    .flatpickr-calendar .flatpickr-day.completely-blocked {
+        background: #ffebee !important;
+        color: #c62828 !important;
+        text-decoration: line-through !important;
+        cursor: not-allowed !important;
+        position: relative !important;
+    }
+    .flatpickr-calendar .flatpickr-day.completely-blocked:hover {
+        background: #ffebee !important;
+    }
+    
+    /* Center Flatpickr calendar */
+    .flatpickr-calendar {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 9999 !important;
+        width: 400px !important;
+        font-size: 16px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-month {
+        height: 60px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-current-month {
+        font-size: 18px !important;
+        padding: 15px 0 !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-weekdays {
+        height: 50px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-weekday {
+        font-size: 16px !important;
+        padding: 15px 0 !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-days {
+        padding: 10px !important;
+        width: 100% !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-day {
+        height: 45px !important;
+        line-height: 45px !important;
+        font-size: 16px !important;
+        margin: 2px !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-day.selected {
+        background: #886455 !important;
+        border-color: #886455 !important;
+    }
+    
+    .flatpickr-calendar .flatpickr-day.inRange {
+        background: rgba(136, 100, 85, 0.2) !important;
+        border-color: rgba(136, 100, 85, 0.2) !important;
+    }
+
+    .dayContainer{
+        max-width: 100%;
+        width: 100%;
+    }
+    .flatpickr-rContainer{
+        width: 100%;
+    }
+    
+    /* Responsive design for mobile */
+    @media (max-width: 768px) {
+        .flatpickr-calendar {
+            width: 90% !important;
+            max-width: 350px !important;
+        }
+    }
+    
     .policy-section {
         background: #f8f9fa;
         border-radius: 8px;
@@ -273,51 +397,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Fetch booked dates and initialize date pickers
-    let bookedDates = [];
-    fetch('/rooms/booked-dates')
-        .then(response => response.json())
-        .then(dates => {
-            bookedDates = dates;
-            initializeDatePickers();
-        })
-        .catch(error => {
-            console.error('Error fetching booked dates:', error);
-            initializeDatePickers();
-        });
+    // Initialize Flatpickr instances
+    let checkInPicker = null;
+    let checkOutPicker = null;
 
-    // Format date to YYYY-MM-DD without timezone issues
-    function formatDateToYYYYMMDD(date) {
+    // Function to refresh calendar styling after data is loaded
+    function refreshCalendarStyling() {
+        if (checkInPicker) {
+            // Force a redraw of the calendar to apply styling
+            checkInPicker.redraw();
+        }
+        if (checkOutPicker) {
+            // Force a redraw of the calendar to apply styling
+            checkOutPicker.redraw();
+        }
+    }
+
+    // Function to format date consistently for comparison
+    function formatDateForComparison(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
-    // Validate date range
+    // Validate date range with half-day blocking
     function validateDateRange(checkInDate, checkOutDate) {
         if (!checkInDate || !checkOutDate) {
             return false;
         }
 
-        // Check if check-in date is a valid checkout date (end of a booking period)
         const checkInDateStr = checkInDate.toISOString().split('T')[0];
-        let checkInDateIsValid = true;
-        
-        if (bookedDates.includes(checkInDateStr)) {
-            // Check if check-in date is the end of a booking period (checkout date)
-            const previousDay = new Date(checkInDate);
-            previousDay.setDate(previousDay.getDate() - 1);
-            const previousDayStr = previousDay.toISOString().split('T')[0];
-            
-            // If the previous day is also booked, then check-in date is part of a booking period
-            // and not a valid checkout date
-            if (bookedDates.includes(previousDayStr)) {
-                checkInDateIsValid = false;
-            }
+        const checkOutDateStr = checkOutDate.toISOString().split('T')[0];
+
+        // Check if check-in date conflicts with existing check-ins (half-day blocking)
+        // If someone is checking in on this date, we can't check in on the same date
+        if (checkInDates.includes(checkInDateStr)) {
+            console.log('Check-in date conflicts with existing check-in:', checkInDateStr);
+            return false;
         }
 
-        if (!checkInDateIsValid) {
+        // Check if check-out date conflicts with existing check-outs (half-day blocking)
+        // If someone is checking out on this date, we can't check out on the same date
+        if (checkOutDates.includes(checkOutDateStr)) {
+            console.log('Check-out date conflicts with existing check-out:', checkOutDateStr);
             return false;
         }
 
@@ -329,56 +452,61 @@ document.addEventListener('DOMContentLoaded', function() {
         while (currentDate < checkOutDate) {
             const dateStr = currentDate.toISOString().split('T')[0];
             if (bookedDates.includes(dateStr)) {
+                console.log('Found booked date in range:', dateStr);
                 hasBookedDatesInRange = true;
                 break;
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Check if checkout date conflicts with existing bookings
-        const checkoutDateStr = checkOutDate.toISOString().split('T')[0];
-        const nextDay = new Date(checkOutDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        const nextDayStr = nextDay.toISOString().split('T')[0];
+        const isValid = !hasBookedDatesInRange;
+        console.log('Date range validation result:', {
+            checkInDateStr,
+            checkOutDateStr,
+            hasBookedDatesInRange,
+            isValid
+        });
         
-        let checkoutDateConflicts = false;
-        if (bookedDates.includes(nextDayStr)) {
-            // Check if nextDay is the start of a booking period
-            let checkDate = new Date(nextDay);
-            let consecutiveBookedDays = 0;
-            
-            // Count consecutive booked days starting from nextDay
-            while (bookedDates.includes(checkDate.toISOString().split('T')[0])) {
-                consecutiveBookedDays++;
-                checkDate.setDate(checkDate.getDate() + 1);
-            }
-            
-            // If nextDay is the start of a booking, then checkout date conflicts
-            // UNLESS the checkout date itself is also a check-in date (start of booking)
-            if (consecutiveBookedDays > 0) {
-                // Check if checkout date is the start of a booking period
-                const previousDay = new Date(checkOutDate);
-                previousDay.setDate(previousDay.getDate() - 1);
-                const previousDayStr = previousDay.toISOString().split('T')[0];
-                
-                // If previous day is NOT booked, then checkout date is a check-in date
-                // and it's valid to check out on a check-in date
-                if (!bookedDates.includes(previousDayStr)) {
-                    // This is a valid check-in date, so checkout is allowed
-                    checkoutDateConflicts = false;
-                } else {
-                    // This is part of an active booking period, so checkout conflicts
-                    checkoutDateConflicts = true;
-                }
-            }
-        }
-
-        return !hasBookedDatesInRange && !checkoutDateConflicts;
+        return isValid;
     }
 
-    // Initialize Flatpickr instances
-    let checkInPicker = null;
-    let checkOutPicker = null;
+    // Fetch booked dates and initialize date pickers
+    let bookedDates = [];
+    let checkInDates = [];
+    let checkOutDates = [];
+    
+    fetch('/rooms/booked-dates')
+        .then(response => response.json())
+        .then(data => {
+            // Handle both old format (array) and new format (object)
+            if (Array.isArray(data)) {
+                bookedDates = data;
+            } else {
+                bookedDates = data.booked_dates || [];
+                checkInDates = data.check_in_dates || [];
+                checkOutDates = data.check_out_dates || [];
+            }
+
+            console.log(checkInDates,'checkInDates');
+            console.log(checkOutDates,'checkOutDates');
+            console.log(bookedDates,'bookedDates');
+            
+            initializeDatePickers();
+            refreshCalendarStyling(); // Call this after data is loaded to apply styling
+        })
+        .catch(error => {
+            console.error('Error fetching booked dates:', error);
+            initializeDatePickers();
+            refreshCalendarStyling(); // Call this even on error to ensure styling is applied
+        });
+
+    // Format date to YYYY-MM-DD without timezone issues
+    function formatDateToYYYYMMDD(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     function initializeDatePickers() {
         // Clear any existing instances
@@ -402,76 +530,153 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Initialize Check-in Date Picker
         checkInPicker = flatpickr(checkInInput, {
-            mode: "single",
             dateFormat: "Y-m-d",
             minDate: "today",
-            disableMobile: "true",
-            theme: "material_blue",
-            inline: false,
-            appendTo: document.body,
-            onDayCreate: function(dObj, dStr, fp, dayElem) {
-                // For check-in dates, we can allow checkout dates (dates that are booked)
-                // but we'll still show them as visually different
-                if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
-                    dayElem.classList.add('blocked');
-                    // Don't disable the date - allow it to be selected for check-in
-                }
-            },
-            onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length === 1) {
-                    const checkInDate = selectedDates[0];
+            disable: [
+                function(date) {
+                    const dateStr = formatDateForComparison(date);
+                    // Block fully booked dates AND check-in dates
+                    // Also block dates that have both check-in and check-out
+                    const isFullyBooked = bookedDates.includes(dateStr);
+                    const hasCheckIn = checkInDates.includes(dateStr);
+                    const hasCheckOut = checkOutDates.includes(dateStr);
                     
-                    // Update check-out picker min date
+                    // If it has both check-in and check-out, block it completely
+                    if (hasCheckIn && hasCheckOut) {
+                        return true;
+                    }
+                    
+                    // Block fully booked dates AND check-in dates
+                    return isFullyBooked || hasCheckIn;
+                }
+            ],
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    const selectedDate = selectedDates[0];
+                    
+                    // Reset check-out picker when check-in changes
                     if (checkOutPicker) {
-                        checkOutPicker.set('minDate', checkInDate);
+                        checkOutPicker.clear();
+                        checkOutInput.value = '';
                     }
                     
                     // Validate if both dates are selected
                     const checkOutDate = checkOutInput.value ? new Date(checkOutInput.value) : null;
                     if (checkOutDate) {
-                        if (validateDateRange(checkInDate, checkOutDate)) {
+                        if (validateDateRange(selectedDate, checkOutDate)) {
                             // Calculate and update price
-                            const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                            const duration = Math.ceil((checkOutDate - selectedDate) / (1000 * 60 * 60 * 24));
                             calculateTotalPrice(duration);
                         } else {
                             checkOutInput.value = '';
                         }
                     }
                 }
+            },
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                const dateStr = formatDateForComparison(dayElem.dateObj);
+                
+                // Apply half-day blocking for check-in dates (lower half blocked)
+                if (checkInDates.includes(dateStr)) {
+                    dayElem.classList.add('half-day-checkin');
+                    dayElem.setAttribute('title', 'Check-out only');
+                    console.log('Applied half-day-checkin to:', dateStr);
+                }
+                
+                // Also show check-out dates (upper half blocked) in check-in picker for reference
+                if (checkOutDates.includes(dateStr)) {
+                    dayElem.classList.add('half-day-checkout');
+                    dayElem.setAttribute('title', 'Check-in only');
+                    console.log('Applied half-day-checkout to check-in picker:', dateStr);
+                }
+                
+                // Apply completely blocked styling for dates with both check-in and check-out
+                if (checkInDates.includes(dateStr) && checkOutDates.includes(dateStr)) {
+                    dayElem.classList.add('completely-blocked');
+                    dayElem.setAttribute('title', 'Completely blocked - both check-in and check-out');
+                    console.log('Applied completely-blocked to:', dateStr);
+                }
             }
         });
 
         // Initialize Check-out Date Picker
         checkOutPicker = flatpickr(checkOutInput, {
-            mode: "single",
             dateFormat: "Y-m-d",
             minDate: checkInInput.value ? new Date(checkInInput.value) : "today",
-            disableMobile: "true",
-            theme: "material_blue",
-            inline: false,
-            appendTo: document.body,
-            onDayCreate: function(dObj, dStr, fp, dayElem) {
-                // For check-out dates, we can allow check-in dates (dates that are booked)
-                // but we'll still show them as visually different
-                if (bookedDates.includes(dayElem.dateObj.toISOString().split('T')[0])) {
-                    dayElem.classList.add('blocked');
-                    // Don't disable the date - allow it to be selected for check-out
-                }
-            },
-            onChange: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length === 1) {
-                    const checkOutDate = selectedDates[0];
-                    const checkInDate = checkInInput.value ? new Date(checkInInput.value) : null;
+            disable: [
+                function(date) {
+                    const dateStr = formatDateForComparison(date);
+                    // Block fully booked dates AND check-out dates
+                    // Also block dates that have both check-in and check-out
+                    const isFullyBooked = bookedDates.includes(dateStr);
+                    const hasCheckIn = checkInDates.includes(dateStr);
+                    const hasCheckOut = checkOutDates.includes(dateStr);
                     
-                    if (checkInDate) {
-                        if (validateDateRange(checkInDate, checkOutDate)) {
-                            // Calculate and update price
-                            const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-                            calculateTotalPrice(duration);
-                        } else {
-                            instance.clear();
-                        }
+                    // If it has both check-in and check-out, block it completely
+                    if (hasCheckIn && hasCheckOut) {
+                        return true;
                     }
+                    
+                    // If it has a check-out, disable it
+                    if (hasCheckOut) {
+                        return true;
+                    }
+                    
+                    // If it's fully booked but also has a check-in, allow it (can check out same day as check-in)
+                    if (isFullyBooked && hasCheckIn) {
+                        return false;
+                    }
+                    
+                    // If it's fully booked without check-in, disable it
+                    if (isFullyBooked) {
+                        return true;
+                    }
+                    
+                    // Otherwise allow it
+                    return false;
+                }
+            ],
+            onChange: function(selectedDates, dateStr, instance) {
+                // if (selectedDates.length > 0) {
+                //     const checkOutDate = selectedDates[0];
+                //     const checkInDate = checkInInput.value ? new Date(checkInInput.value) : null;
+                    
+                //     if (checkInDate) {
+                //         if (validateDateRange(checkInDate, checkOutDate)) {
+                //             // Calculate and update price
+                //             const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                //             calculateTotalPrice(duration);
+                //         } else {
+                //             // Invalid range - clear the selection
+                //             checkOutPicker.clear();
+                //             checkOutInput.value = '';
+                //             alert('Selected dates are not available. Please choose different dates.');
+                //         }
+                //     }
+                // }
+            },
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                const dateStr = formatDateForComparison(dayElem.dateObj);
+                
+                // Apply half-day blocking for check-out dates (upper half blocked)
+                if (checkOutDates.includes(dateStr)) {
+                    dayElem.classList.add('half-day-checkout');
+                    dayElem.setAttribute('title', 'Check-out only - upper half blocked');
+                    console.log('Applied half-day-checkout to:', dateStr);
+                }
+                
+                // Also show check-in dates (lower half blocked) in check-out picker for reference
+                if (checkInDates.includes(dateStr)) {
+                    dayElem.classList.add('half-day-checkin');
+                    dayElem.setAttribute('title', 'Check-in only - lower half blocked');
+                    console.log('Applied half-day-checkin to check-out picker:', dateStr);
+                }
+                
+                // Apply completely blocked styling for dates with both check-in and check-out
+                if (checkInDates.includes(dateStr) && checkOutDates.includes(dateStr)) {
+                    dayElem.classList.add('completely-blocked');
+                    dayElem.setAttribute('title', 'Completely blocked - both check-in and check-out');
+                    console.log('Applied completely-blocked to check-out picker:', dateStr);
                 }
             }
         });
