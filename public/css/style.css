@@ -622,34 +622,6 @@ img.full-logo{
     box-shadow: 0 0 0 2px rgba(136, 100, 85, 0.2);
 }
 
-.flatpickr-calendar {
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    font-family: var(--font-family);
-}
-
-.flatpickr-day.selected {
-    background: var(--secondary-color);
-    border-color: var(--secondary-color);
-}
-
-.flatpickr-day.selected:hover {
-    background: var(--secondary-color);
-    border-color: var(--secondary-color);
-}
-
-.flatpickr-day.inRange {
-    background: rgba(136, 100, 85, 0.1);
-    border-color: var(--secondary-color);
-}
-
-.flatpickr-day.today {
-    border-color: var(--secondary-color);
-}
-
-.flatpickr-day:hover {
-    background: rgba(136, 100, 85, 0.1);
-}
 
 .gallery-container{
   padding: 100px 0;

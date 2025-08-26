@@ -84,7 +84,7 @@
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         z-index: 9999 !important;
-        width: 400px !important;
+        width: 330px !important;
         font-size: 16px !important;
     }
     
@@ -413,11 +413,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Function to create a consistent date object without timezone issues
+    function createLocalDate(dateString) {
+        const date = new Date(dateString);
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
     // Function to format date consistently for comparison
     function formatDateForComparison(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        // Create a new date object to avoid timezone issues
+        const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const year = localDate.getFullYear();
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const day = String(localDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
@@ -532,6 +540,12 @@ document.addEventListener('DOMContentLoaded', function() {
         checkInPicker = flatpickr(checkInInput, {
             dateFormat: "Y-m-d",
             minDate: "today",
+            time_24hr: false,
+            allowInput: false,
+            clickOpens: true,
+            parseDate: (datestr, format) => {
+                return createLocalDate(datestr);
+            },
             disable: [
                 function(date) {
                     const dateStr = formatDateForComparison(date);
@@ -560,18 +574,55 @@ document.addEventListener('DOMContentLoaded', function() {
                         checkOutInput.value = '';
                     }
                     
-                    // Validate if both dates are selected
-                    const checkOutDate = checkOutInput.value ? new Date(checkOutInput.value) : null;
-                    if (checkOutDate) {
-                        if (validateDateRange(selectedDate, checkOutDate)) {
-                            // Calculate and update price
-                            const duration = Math.ceil((checkOutDate - selectedDate) / (1000 * 60 * 60 * 24));
-                            calculateTotalPrice(duration);
-                        } else {
-                            checkOutInput.value = '';
-                        }
+                    // Update min date for check-out picker
+                    checkOutPicker.set('minDate', createLocalDate(selectedDate));
+                    
+                    // Clear any existing price calculation
+                    const priceContainer = document.querySelector('.text-kubo');
+                    if (priceContainer) {
+                        priceContainer.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Total Amount:</span>
+                                <span class="btn btn-kubo btn-kubo-alternate-second">₱{{ number_format($rooms->total_price ?? 0, 2) }}</span>
+                            </div>`;
                     }
+                    
+                    // Reset hidden input fields
+                    document.getElementById('total_amount_input').value = '{{ $rooms->total_price ?? 0 }}';
+                    document.getElementById('original_amount_input').value = '{{ $rooms->original_price ?? $rooms->total_price ?? 0 }}';
+                    document.getElementById('discount_amount_input').value = '{{ $rooms->discount_amount ?? 0 }}';
+                    
+                    // Clear discount code
+                    document.getElementById('discount_code').value = '';
+                    document.getElementById('discount_message').innerHTML = '';
                 }
+            },
+            onClear: function(selectedDates, dateStr, instance) {
+                // Reset check-out picker when check-in is cleared
+                if (checkOutPicker) {
+                    checkOutPicker.clear();
+                    checkOutInput.value = '';
+                    checkOutPicker.set('minDate', 'today');
+                }
+                
+                // Reset price display to default
+                const priceContainer = document.querySelector('.text-kubo');
+                if (priceContainer) {
+                    priceContainer.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Total Amount:</span>
+                            <span class="btn btn-kubo btn-kubo-alternate-second">₱{{ number_format($rooms->total_price ?? 0, 2) }}</span>
+                        </div>`;
+                }
+                
+                // Reset hidden input fields
+                document.getElementById('total_amount_input').value = '{{ $rooms->total_price ?? 0 }}';
+                document.getElementById('original_amount_input').value = '{{ $rooms->original_price ?? $rooms->total_price ?? 0 }}';
+                document.getElementById('discount_amount_input').value = '{{ $rooms->discount_amount ?? 0 }}';
+                
+                // Clear discount code
+                document.getElementById('discount_code').value = '';
+                document.getElementById('discount_message').innerHTML = '';
             },
             onDayCreate: function(dObj, dStr, fp, dayElem) {
                 const dateStr = formatDateForComparison(dayElem.dateObj);
@@ -602,7 +653,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initialize Check-out Date Picker
         checkOutPicker = flatpickr(checkOutInput, {
             dateFormat: "Y-m-d",
-            minDate: checkInInput.value ? new Date(checkInInput.value) : "today",
+            minDate: checkInInput.value ? createLocalDate(checkInInput.value) : "today",
+            time_24hr: false,
+            allowInput: false,
+            clickOpens: true,
+            parseDate: (datestr, format) => {
+                return createLocalDate(datestr);
+            },
             disable: [
                 function(date) {
                     const dateStr = formatDateForComparison(date);
@@ -637,23 +694,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             ],
             onChange: function(selectedDates, dateStr, instance) {
-                // if (selectedDates.length > 0) {
-                //     const checkOutDate = selectedDates[0];
-                //     const checkInDate = checkInInput.value ? new Date(checkInInput.value) : null;
+                if (selectedDates.length > 0) {
+                    const checkOutDate = selectedDates[0];
+                    const checkInDate = checkInInput.value ? new Date(checkInInput.value) : null;
                     
-                //     if (checkInDate) {
-                //         if (validateDateRange(checkInDate, checkOutDate)) {
-                //             // Calculate and update price
-                //             const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-                //             calculateTotalPrice(duration);
-                //         } else {
-                //             // Invalid range - clear the selection
-                //             checkOutPicker.clear();
-                //             checkOutInput.value = '';
-                //             alert('Selected dates are not available. Please choose different dates.');
-                //         }
-                //     }
-                // }
+                    if (checkInDate) {
+                        if (validateDateRange(checkInDate, checkOutDate)) {
+                            // Calculate and update price
+                            const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                            calculateTotalPrice(duration);
+                        } else {
+                            // Invalid range - clear the selection
+                            checkOutPicker.clear();
+                            checkOutInput.value = '';
+                            alert('Selected dates are not available. Please choose different dates.');
+                        }
+                    }
+                }
+            },
+            onClear: function(selectedDates, dateStr, instance) {
+                // Reset price display to default when check-out is cleared
+                const priceContainer = document.querySelector('.text-kubo');
+                if (priceContainer) {
+                    priceContainer.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Total Amount:</span>
+                            <span class="btn btn-kubo btn-kubo-alternate-second">₱{{ number_format($rooms->total_price ?? 0, 2) }}</span>
+                        </div>`;
+                }
+                
+                // Reset hidden input fields
+                document.getElementById('total_amount_input').value = '{{ $rooms->total_price ?? 0 }}';
+                document.getElementById('original_amount_input').value = '{{ $rooms->original_price ?? $rooms->total_price ?? 0 }}';
+                document.getElementById('discount_amount_input').value = '{{ $rooms->discount_amount ?? 0 }}';
+                
+                // Clear discount code
+                document.getElementById('discount_code').value = '';
+                document.getElementById('discount_message').innerHTML = '';
             },
             onDayCreate: function(dObj, dStr, fp, dayElem) {
                 const dateStr = formatDateForComparison(dayElem.dateObj);
@@ -683,14 +760,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Set initial min date for check-out based on check-in value if it exists
         if (checkInInput.value) {
-            checkOutPicker.set('minDate', checkInInput.value);
+            checkOutPicker.set('minDate', createLocalDate(checkInInput.value));
         }
     }
 
     // Function to calculate total price based on duration
     function calculateTotalPrice(duration) {
-        // Get the base price and costs from the room data
-        const basePrice = {{ $rooms->lean_weekday_price ?? 0 }}; // Use the base room price
+        // Get all the price fields from the room data
+        const leanWeekdayPrice = {{ $rooms->lean_weekday_price ?? 0 }};
+        const leanWeekendPrice = {{ $rooms->lean_weekend_price ?? 0 }};
+        const peakWeekdayPrice = {{ $rooms->peak_weekday_price ?? 0 }};
+        const peakWeekendPrice = {{ $rooms->peak_weekend_price ?? 0 }};
+        
+        // Get season dates
+        const peakSeasonStart = '{{ $rooms->peak_season_start ?? "" }}';
+        const peakSeasonEnd = '{{ $rooms->peak_season_end ?? "" }}';
+        const leanSeasonStart = '{{ $rooms->lean_season_start ?? "" }}';
+        const leanSeasonEnd = '{{ $rooms->lean_season_end ?? "" }}';
+        
         const costPerAdult = {{ $rooms->cost_adult ?? 0 }};
         const costPerChild = {{ $rooms->cost_child ?? 0 }};
         const costPerPet = {{ $rooms->cost_pet ?? 0 }};
@@ -700,8 +787,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const children = parseInt(addChildInput.value) || 0;
         const pets = parseInt(petInput.value) || 0;
 
-        // Calculate base price for the entire stay
-        const totalBasePrice = basePrice * duration;
+        // Get check-in and check-out dates
+        const checkInDate = createLocalDate(document.getElementById('check_in').value);
+        const checkOutDate = createLocalDate(document.getElementById('check_out').value);
+        
+        let totalBasePrice = 0;
+        
+        // Calculate price for each night
+        let currentDate = new Date(checkInDate);
+        while (currentDate < checkOutDate) {
+            const dateStr = formatDateForComparison(currentDate);
+            const dayOfWeek = currentDate.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 4 || dayOfWeek === 5 || dayOfWeek === 6; // Sunday = 0, Thursday = 4, Friday = 5, Saturday = 6
+            
+            // Determine if this date is in peak season
+            let isPeakSeason = false;
+            if (peakSeasonStart && peakSeasonEnd) {
+                const peakStart = createLocalDate(peakSeasonStart);
+                const peakEnd = createLocalDate(peakSeasonEnd);
+                
+                // Handle case where peak season spans across new year
+                if (peakStart > peakEnd) {
+                    // Peak season spans across new year (e.g., Dec 15 to Jan 15)
+                    isPeakSeason = currentDate >= peakStart || currentDate <= peakEnd;
+                } else {
+                    // Normal peak season within same year
+                    isPeakSeason = currentDate >= peakStart && currentDate <= peakEnd;
+                }
+            }
+            
+            // Debug logging for season detection
+            console.log(`Date: ${dateStr}, IsPeakSeason: ${isPeakSeason}`);
+            
+            // Determine the price for this night
+            let nightPrice;
+            if (isPeakSeason) {
+                nightPrice = isWeekend ? peakWeekendPrice : peakWeekdayPrice;
+            } else {
+                nightPrice = isWeekend ? leanWeekendPrice : leanWeekdayPrice;
+            }
+            
+            // Debug logging for price selection
+            console.log(`Date: ${dateStr}, Season: ${isPeakSeason ? 'Peak' : 'Lean'}, Day: ${isWeekend ? 'Weekend' : 'Weekday'}, Price: ${nightPrice}`);
+            
+            totalBasePrice += nightPrice;
+            
+            // Move to next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
 
         // Calculate additional costs per night
         const additionalAdultsCost = additionalAdults * costPerAdult * duration;
@@ -764,8 +897,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const checkIn = document.getElementById('check_in').value;
             const checkOut = document.getElementById('check_out').value;
             if (checkIn && checkOut) {
-                const checkInDate = new Date(checkIn);
-                const checkOutDate = new Date(checkOut);
+                const checkInDate = createLocalDate(checkIn);
+                const checkOutDate = createLocalDate(checkOut);
                 const duration = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
                 calculateTotalPrice(duration);
             }
@@ -790,9 +923,54 @@ document.addEventListener('DOMContentLoaded', function() {
         discountMessage.innerHTML = '<span class="text-info">Validating discount code...</span>';
 
         // Get the base price and additional costs
-        const basePrice = {{ $rooms->lean_weekday_price ?? 0 }};
+        // Calculate the actual base price using the same logic as calculateTotalPrice
+        const leanWeekdayPrice = {{ $rooms->lean_weekday_price ?? 0 }};
+        const leanWeekendPrice = {{ $rooms->lean_weekend_price ?? 0 }};
+        const peakWeekdayPrice = {{ $rooms->peak_weekday_price ?? 0 }};
+        const peakWeekendPrice = {{ $rooms->peak_weekend_price ?? 0 }};
+        
+        // Get season dates
+        const peakSeasonStart = '{{ $rooms->peak_season_start ?? "" }}';
+        const peakSeasonEnd = '{{ $rooms->peak_season_end ?? "" }}';
+        
         const duration = Math.ceil((new Date(document.getElementById('check_out').value) - new Date(document.getElementById('check_in').value)) / (1000 * 60 * 60 * 24));
-        const totalBasePrice = basePrice * duration;
+        
+        // Calculate the actual base price for the selected dates
+        let totalBasePrice = 0;
+        const checkInDate = createLocalDate(document.getElementById('check_in').value);
+        const checkOutDate = createLocalDate(document.getElementById('check_out').value);
+        
+        let currentDate = new Date(checkInDate);
+        while (currentDate < checkOutDate) {
+            const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 4 || currentDate.getDay() === 5 || currentDate.getDay() === 6;
+            
+            // Determine if this date is in peak season
+            let isPeakSeason = false;
+            if (peakSeasonStart && peakSeasonEnd) {
+                const peakStart = createLocalDate(peakSeasonStart);
+                const peakEnd = createLocalDate(peakSeasonEnd);
+                
+                // Handle case where peak season spans across new year
+                if (peakStart > peakEnd) {
+                    isPeakSeason = currentDate >= peakStart || currentDate <= peakEnd;
+                } else {
+                    isPeakSeason = currentDate >= peakStart && currentDate <= peakEnd;
+                }
+            }
+            
+            // Determine the price for this night
+            let nightPrice;
+            if (isPeakSeason) {
+                nightPrice = isWeekend ? peakWeekendPrice : peakWeekdayPrice;
+            } else {
+                nightPrice = isWeekend ? leanWeekendPrice : leanWeekdayPrice;
+            }
+            
+            totalBasePrice += nightPrice;
+            
+            // Move to next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
         
         // Calculate additional costs
         const additionalAdults = parseInt(addAdultInput.value) || 0;

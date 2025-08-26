@@ -37,46 +37,46 @@ class CreateBooking extends CreateRecord
                     ->minDate(now()->addDays(1))
                     ->displayFormat('d/m/Y')
                     ->native(false)
-                    ->firstDayOfWeek(1)
-                    ->disabledDates(function () {
-                        $bookedDates = [];
-                        $bookings = Booking::query()
-                            ->where('check_out', '>=', now())
-                            ->get(['check_in', 'check_out']);
+                    ->firstDayOfWeek(1),
+                    // ->disabledDates(function () {
+                    //     $bookedDates = [];
+                    //     $bookings = Booking::query()
+                    //         ->where('check_out', '>=', now())
+                    //         ->get(['check_in', 'check_out']);
 
-                        foreach ($bookings as $booking) {
-                            $currentDate = $booking->check_in->copy();
-                            while ($currentDate->lt($booking->check_out)) {
-                                $bookedDates[] = $currentDate->format('Y-m-d');
-                                $currentDate->addDay();
-                            }
-                        }
+                    //     foreach ($bookings as $booking) {
+                    //         $currentDate = $booking->check_in->copy();
+                    //         while ($currentDate->lt($booking->check_out)) {
+                    //             $bookedDates[] = $currentDate->format('Y-m-d');
+                    //             $currentDate->addDay();
+                    //         }
+                    //     }
 
-                        return array_unique($bookedDates);
-                    }),
+                    //     return array_unique($bookedDates);
+                    // }),
                 DateTimePicker::make('check_out')
                     ->required()
                     ->label('Check-out Date')
                     ->minDate(fn ($get) => $get('check_in') ? \Carbon\Carbon::parse($get('check_in'))->addDay() : now()->addDays(2))
                     ->displayFormat('d/m/Y')
                     ->native(false)
-                    ->firstDayOfWeek(1)
-                    ->disabledDates(function () {
-                        $bookedDates = [];
-                        $bookings = Booking::query()
-                            ->where('check_out', '>=', now())
-                            ->get(['check_in', 'check_out']);
+                    ->firstDayOfWeek(1),
+                    // ->disabledDates(function () {
+                    //     $bookedDates = [];
+                    //     $bookings = Booking::query()
+                    //         ->where('check_out', '>=', now())
+                    //         ->get(['check_in', 'check_out']);
 
-                        foreach ($bookings as $booking) {
-                            $currentDate = $booking->check_in->copy();
-                            while ($currentDate->lt($booking->check_out)) {
-                                $bookedDates[] = $currentDate->format('Y-m-d');
-                                $currentDate->addDay();
-                            }
-                        }
+                    //     foreach ($bookings as $booking) {
+                    //         $currentDate = $booking->check_in->copy();
+                    //         while ($currentDate->lt($booking->check_out)) {
+                    //             $bookedDates[] = $currentDate->format('Y-m-d');
+                    //             $currentDate->addDay();
+                    //         }
+                    //     }
 
-                        return array_unique($bookedDates);
-                    }),
+                    //     return array_unique($bookedDates);
+                    // }),
                 Select::make('status')
                     ->required()
                     ->label('Status')

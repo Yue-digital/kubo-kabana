@@ -123,7 +123,7 @@
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         z-index: 9999 !important;
-        width: 400px !important;
+        width: 330px !important;
         font-size: 16px !important;
     }
     
@@ -284,14 +284,14 @@
       <div class="modal-body pt-0 text-center">
         <div class="text-start mt-4" style="color: #7B5A3A;">
           @if(isset($room) && $room->is_peak_season)
-            <strong>Weekday rate (Monday – Friday)</strong><br>
+            <strong>Weekday rate (Monday, Tuesday, Wednesday)</strong><br>
             Php {{ number_format($room->peak_weekday_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
               <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
               <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
-            <strong>Weekend rate (Saturday & Sunday)</strong><br>
+            <strong>Weekend rate (Thursday, Friday, Saturday, Sunday)</strong><br>
             Php {{ number_format($room->peak_weekend_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
@@ -299,14 +299,14 @@
               <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
           @else
-            <strong>Weekday rate (Monday – Friday)</strong><br>
+            <strong>Weekday rate (Monday, Tuesday, Wednesday)</strong><br>
             Php {{ number_format($room->lean_weekday_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
               <li>Maximum of {{ $room->max_child }} kids aged 0 - {{ $room->max_child_age }} years old. <span style="color: #b08a60;">(free of charge)</span></li>
               <li>If requested, additional beddings will cost Php {{ $room->additional_bedding_cost }}</li>
             </ul>
-            <strong>Weekend rate (Saturday & Sunday)</strong><br>
+            <strong>Weekend rate (Thursday, Friday, Saturday, Sunday)</strong><br>
             Php {{ number_format($room->lean_weekend_price) }}
             <ul>
               <li>Minimum of {{ $room->min_guest }} adult guests and maximum of {{ $room->max_guest }} adult guests.</li>
@@ -491,7 +491,7 @@
                             checkOutDateInput.value = '';
                         }
                         
-                        // Update Book Now button
+                        // Update Book Now button with check-in date only
                         updateBookNowButton(selectedDate, null);
                     }
                 },
@@ -595,18 +595,10 @@
                         // Get check-in date
                         const checkInDate = checkInPicker.selectedDates[0];
                         
-                        // if (checkInDate) {
-                        //     // Validate the date range
-                        //     if (validateDateRange(checkInDate, selectedDate)) {
-                        //         // Update Book Now button
-                        //         updateBookNowButton(checkInDate, selectedDate);
-                        //     } else {
-                        //         // Invalid range - clear the selection
-                        //         checkOutPicker.clear();
-                        //         checkOutDateInput.value = '';
-                        //         alert('Selected dates are not available. Please choose different dates.');
-                        //     }
-                        // }
+                        if (checkInDate) {
+                            // Update Book Now button with both dates
+                            updateBookNowButton(checkInDate, selectedDate);
+                        }
                     }
                 },
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
@@ -660,6 +652,9 @@
                 if (!isNaN(checkInDate.getTime())) {
                     checkInPicker.setDate(checkInDate);
                     checkInDateInput.value = formatDate(checkInDate);
+                    
+                    // Update Book Now button with check-in date
+                    updateBookNowButton(checkInDate, null);
                 }
             }
             
@@ -668,6 +663,11 @@
                 if (!isNaN(checkOutDate.getTime())) {
                     checkOutPicker.setDate(checkOutDate);
                     checkOutDateInput.value = formatDate(checkOutDate);
+                    
+                    // Update Book Now button with both dates if check-in is also set
+                    if (checkInPicker.selectedDates[0]) {
+                        updateBookNowButton(checkInPicker.selectedDates[0], checkOutDate);
+                    }
                 }
             }
         }
